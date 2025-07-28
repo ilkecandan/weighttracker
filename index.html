@@ -4,10 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Weight Tracker</title>
+  <meta name="description" content="Track your weight progress with this PWA">
   <link rel="manifest" href="manifest.json">
   <link rel="stylesheet" href="style.css">
   <link rel="icon" href="images/icon.png">
   <meta name="theme-color" content="#4a90e2">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Weight Tracker">
+  <link rel="apple-touch-icon" href="images/icon.png">
 </head>
 <body>
   <main>
@@ -26,7 +31,7 @@
       <input type="number" id="weight" placeholder="Enter your weight" step="0.1" />
       <div class="button-group">
         <button id="saveBtn">💾 Save Entry</button>
-        <button id="installBtn" class="install-button">📲 Install App</button>
+        <button id="installBtn" class="install-button" style="display:none">📲 Install App</button>
       </div>
     </section>
 
@@ -78,7 +83,9 @@
 
     <section class="chart-section">
       <h2>📈 Your Progress</h2>
-      <canvas id="weightChart"></canvas>
+      <div class="chart-container">
+        <canvas id="weightChart"></canvas>
+      </div>
     </section>
 
     <section class="entries-section">
@@ -102,10 +109,10 @@
       </div>
     </section>
 
-    <div id="installBanner" class="install-banner">
+    <div id="installBanner" class="install-banner" style="display:none">
       <p>Install this app for a better experience!</p>
       <div>
-        <button id="dismissBanner">Not Now</button>
+        <button id="dismissBanner" class="secondary-btn">Not Now</button>
         <button id="installBannerBtn">Install</button>
       </div>
     </div>
@@ -119,8 +126,10 @@
       <input type="date" id="editDate" />
       <label for="editWeight">Weight (kg):</label>
       <input type="number" id="editWeight" step="0.1" />
-      <button id="saveEditBtn">Save Changes</button>
-      <button id="deleteEntryBtn" class="delete-btn">Delete Entry</button>
+      <div class="modal-button-group">
+        <button id="saveEditBtn">Save Changes</button>
+        <button id="deleteEntryBtn" class="delete-btn">Delete Entry</button>
+      </div>
     </div>
   </div>
 

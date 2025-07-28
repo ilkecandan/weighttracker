@@ -1,32 +1,21 @@
-# Updating manifest.json with the improved configuration
-updated_manifest = {
-    "name": "Weight Tracker",
-    "short_name": "Tracker",
-    "description": "Effortlessly track your daily weight and visualize progress anytime, anywhere.",
-    "start_url": "./index.html",  # Adjusted for better cross-environment support
-    "display": "standalone",
-    "background_color": "#ffffff",
-    "theme_color": "#4a90e2",
-    "icons": [
-        {
-            "src": "icon-192.png",
-            "sizes": "192x192",
-            "type": "image/png"
-        },
-        {
-            "src": "icon-512.png",
-            "sizes": "512x512",
-            "type": "image/png"
-        }
-    ]
+{
+  "name": "Weight Tracker",
+  "short_name": "Tracker",
+  "description": "Effortlessly track your daily weight and visualize progress anytime, anywhere.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4a90e2",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
 }
-
-import json
-
-# Write the updated manifest back to the file
-with open(manifest_path, 'w') as f:
-    json.dump(updated_manifest, f, indent=2)
-
-# Confirm the update
-with open(manifest_path, 'r') as f:
-    f.read()

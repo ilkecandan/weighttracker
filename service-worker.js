@@ -5,8 +5,7 @@ const URLS_TO_CACHE = [
   './index.html',
   './style.css',
   './app.js',
-  './icon-192.png',
-  './icon-512.png'
+  '/images/icon.png',
 ];
 
 // Install event: cache assets

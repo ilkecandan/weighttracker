@@ -1,4 +1,4 @@
-/* General Page Styles */
+/* ==== style.css ==== */
 body {
   font-family: 'Segoe UI', sans-serif;
   background: linear-gradient(to right, #e0f7ff, #f9fbff);
@@ -12,7 +12,7 @@ body {
 }
 
 main {
-  max-width: 600px;
+  max-width: 700px;
   width: 100%;
   background: #ffffff;
   border-radius: 20px;
@@ -22,12 +22,11 @@ main {
 }
 
 h1 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: #4a90e2;
   margin-bottom: 1.5rem;
 }
 
-/* Input Section */
 .input-section {
   display: flex;
   flex-direction: column;
@@ -39,9 +38,8 @@ h1 {
 .input-section button {
   padding: 0.8rem;
   font-size: 1rem;
-  border-radius: 12px;
+  border-radius: 10px;
   border: 1px solid #ccc;
-  outline: none;
   transition: all 0.2s ease-in-out;
 }
 
@@ -56,14 +54,16 @@ h1 {
   font-weight: bold;
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s;
 }
 
 #saveBtn:hover {
   background-color: #3a78c2;
 }
 
-/* Chart */
+.chart-section {
+  margin-top: 2rem;
+}
+
 canvas {
   width: 100% !important;
   height: auto !important;

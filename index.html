@@ -11,180 +11,121 @@
 </head>
 <body>
   <main>
-    <h1>📅 Daily Weight Tracker</h1>
+    <div class="header-section">
+      <h1>📅 Daily Weight Tracker</h1>
+      <p class="privacy-notice">Your data stays 100% on your device - we don't collect anything!</p>
+      <div class="theme-toggle">
+        <button id="themeBtn">🌙 Dark Mode</button>
+      </div>
+    </div>
 
     <section class="input-section">
       <label for="date">Date:</label>
       <input type="date" id="date" />
       <label for="weight">Weight (kg):</label>
-      <input type="number" id="weight" placeholder="Enter your weight" />
-      <button id="saveBtn">💾 Save Entry</button>
-      <button id="installBtn" style="display:none; margin-top: 10px;">📲 Install App</button>
+      <input type="number" id="weight" placeholder="Enter your weight" step="0.1" />
+      <div class="button-group">
+        <button id="saveBtn">💾 Save Entry</button>
+        <button id="installBtn" class="install-button">📲 Install App</button>
+      </div>
+    </section>
+
+    <section class="goal-section">
+      <h2>🎯 Set a Goal</h2>
+      <div class="goal-input">
+        <label for="targetWeight">Target Weight (kg):</label>
+        <input type="number" id="targetWeight" placeholder="Your goal weight" step="0.1" />
+        <button id="setGoalBtn">Set Goal</button>
+      </div>
+      <div id="goalProgress" class="progress-container">
+        <!-- Progress will be shown here -->
+      </div>
     </section>
 
     <section class="filter-section">
       <label for="timeRange">View Range:</label>
       <select id="timeRange">
         <option value="7">Last 7 Days</option>
-        <option value="30">Last 30 Days</option>
+        <option value="30" selected>Last 30 Days</option>
+        <option value="90">Last 90 Days</option>
         <option value="365">Last Year</option>
         <option value="all">All Time</option>
       </select>
+      <button id="exportBtn" class="secondary-btn">📤 Export Data</button>
+    </section>
+
+    <section class="stats-section">
+      <h2>📊 Your Stats</h2>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Current</h3>
+          <p id="currentWeight">-- kg</p>
+        </div>
+        <div class="stat-card">
+          <h3>Change (7d)</h3>
+          <p id="weeklyChange">-- kg</p>
+        </div>
+        <div class="stat-card">
+          <h3>Change (30d)</h3>
+          <p id="monthlyChange">-- kg</p>
+        </div>
+        <div class="stat-card">
+          <h3>Streak</h3>
+          <p id="streakCount">-- days</p>
+        </div>
+      </div>
     </section>
 
     <section class="chart-section">
-      <h2>📊 Your Progress</h2>
+      <h2>📈 Your Progress</h2>
       <canvas id="weightChart"></canvas>
     </section>
+
+    <section class="entries-section">
+      <h2>📝 Your Entries</h2>
+      <div class="entries-controls">
+        <input type="text" id="searchEntry" placeholder="Search entries..." />
+      </div>
+      <div class="entries-table-container">
+        <table id="entriesTable">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Weight</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Entries will be populated here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div id="installBanner" class="install-banner">
+      <p>Install this app for a better experience!</p>
+      <div>
+        <button id="dismissBanner">Not Now</button>
+        <button id="installBannerBtn">Install</button>
+      </div>
+    </div>
   </main>
 
+  <div id="editModal" class="modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <h2>Edit Entry</h2>
+      <label for="editDate">Date:</label>
+      <input type="date" id="editDate" />
+      <label for="editWeight">Weight (kg):</label>
+      <input type="number" id="editWeight" step="0.1" />
+      <button id="saveEditBtn">Save Changes</button>
+      <button id="deleteEntryBtn" class="delete-btn">Delete Entry</button>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script>
-    const dateInput = document.getElementById('date');
-    const weightInput = document.getElementById('weight');
-    const saveBtn = document.getElementById('saveBtn');
-    const installBtn = document.getElementById('installBtn');
-    const ctx = document.getElementById('weightChart').getContext('2d');
-    const timeRange = document.getElementById('timeRange');
-
-    let weightData = JSON.parse(localStorage.getItem('weights')) || {};
-    let weightChart = null;
-    let deferredPrompt;
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      installBtn.style.display = 'inline-block';
-    });
-
-    installBtn.addEventListener('click', () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        deferredPrompt.userChoice.then(choiceResult => {
-          if (choiceResult.outcome === 'accepted') {
-            console.log('User accepted the A2HS prompt');
-          }
-          deferredPrompt = null;
-        });
-      }
-    });
-
-    function saveWeight() {
-      const date = dateInput.value;
-      const weight = parseFloat(weightInput.value);
-
-      if (!date || isNaN(weight)) {
-        alert("⚠️ Please enter a valid date and a number for weight.");
-        return;
-      }
-
-      weightData[date] = weight;
-      localStorage.setItem('weights', JSON.stringify(weightData));
-      weightInput.value = '';
-      showToast(`Saved entry for ${date}: ${weight} kg 🏋️‍♀️`);
-      renderChart();
-    }
-
-    function filterData(range) {
-      const now = new Date();
-      return Object.keys(weightData)
-        .filter(date => {
-          if (range === 'all') return true;
-          const diff = (now - new Date(date)) / (1000 * 60 * 60 * 24);
-          return diff <= parseInt(range);
-        })
-        .sort();
-    }
-
-    function renderChart() {
-      const range = timeRange.value;
-      const filteredDates = filterData(range);
-      const weights = filteredDates.map(date => weightData[date]);
-
-      if (weightChart instanceof Chart) {
-        weightChart.destroy();
-      }
-
-      weightChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: filteredDates,
-          datasets: [{
-            label: 'Weight (kg)',
-            data: weights,
-            borderColor: '#4a90e2',
-            backgroundColor: 'rgba(74, 144, 226, 0.15)',
-            fill: true,
-            tension: 0.3,
-            pointRadius: 5,
-            pointBackgroundColor: '#4a90e2'
-          }]
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: true },
-            tooltip: {
-              callbacks: {
-                label: context => `${context.parsed.y} kg`
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: false,
-              title: { display: true, text: 'Weight (kg)' }
-            },
-            x: {
-              title: { display: true, text: 'Date' }
-            }
-          }
-        }
-      });
-    }
-
-    function showToast(msg) {
-      const toast = document.createElement('div');
-      toast.className = 'toast';
-      toast.textContent = msg;
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 3000);
-    }
-
-    saveBtn.addEventListener('click', saveWeight);
-    timeRange.addEventListener('change', renderChart);
-    renderChart();
-  </script>
-
-  <style>
-    .toast {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #4a90e2;
-      color: white;
-      padding: 1rem 2rem;
-      border-radius: 12px;
-      font-weight: bold;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      z-index: 999;
-      animation: fadeInOut 3s ease-in-out;
-    }
-
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
-    }
-  </style>
-
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('service-worker.js')
-        .then(reg => console.log('Service Worker registered ✅', reg))
-        .catch(err => console.warn('Service Worker registration failed ❌', err));
-    }
-  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>
+  <script src="app.js"></script>
 </body>
 </html>

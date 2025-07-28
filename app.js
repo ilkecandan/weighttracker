@@ -1,13 +1,36 @@
 const dateInput = document.getElementById('date');
 const weightInput = document.getElementById('weight');
 const saveBtn = document.getElementById('saveBtn');
+const installBtn = document.getElementById('installBtn');
+const timeRange = document.getElementById('timeRange');
 const ctx = document.getElementById('weightChart').getContext('2d');
 
-// Init localStorage data
 let weightData = JSON.parse(localStorage.getItem('weights')) || {};
-
-// Define chart variable outside function scope
 let weightChart = null;
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (installBtn) {
+    installBtn.style.display = 'inline-block';
+  }
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(choiceResult => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the install prompt');
+        }
+        deferredPrompt = null;
+        installBtn.style.display = 'none';
+      });
+    }
+  });
+}
 
 function saveWeight() {
   const date = dateInput.value;
@@ -18,23 +41,32 @@ function saveWeight() {
     return;
   }
 
-  // Save to data object
   weightData[date] = weight;
   localStorage.setItem('weights', JSON.stringify(weightData));
 
-  // Clear input
   weightInput.value = '';
   showToast(`Saved entry for ${date}: ${weight} kg 🏋️‍♀️`);
-
   renderChart();
 }
 
+function getFilteredData(range) {
+  const now = new Date();
+  return Object.keys(weightData)
+    .filter(date => {
+      if (range === 'all') return true;
+      const diff = (now - new Date(date)) / (1000 * 60 * 60 * 24);
+      return diff <= parseInt(range);
+    })
+    .sort();
+}
+
 function renderChart() {
-  const sortedDates = Object.keys(weightData).sort();
+  const range = timeRange ? timeRange.value : 'all';
+  const sortedDates = getFilteredData(range);
   const weights = sortedDates.map(date => weightData[date]);
 
   if (weightChart instanceof Chart) {
-    weightChart.destroy(); // Proper chart destroy
+    weightChart.destroy();
   }
 
   weightChart = new Chart(ctx, {
@@ -49,15 +81,13 @@ function renderChart() {
         fill: true,
         tension: 0.3,
         pointRadius: 5,
-        pointBackgroundColor: '#4a90e2',
+        pointBackgroundColor: '#4a90e2'
       }]
     },
     options: {
       responsive: true,
       plugins: {
-        legend: {
-          display: true
-        },
+        legend: { display: true },
         tooltip: {
           callbacks: {
             label: context => `${context.parsed.y} kg`
@@ -83,7 +113,6 @@ function renderChart() {
   });
 }
 
-// Show simple toast
 function showToast(msg) {
   const toast = document.createElement('div');
   toast.className = 'toast';
@@ -93,4 +122,5 @@ function showToast(msg) {
 }
 
 saveBtn.addEventListener('click', saveWeight);
+if (timeRange) timeRange.addEventListener('change', renderChart);
 renderChart();

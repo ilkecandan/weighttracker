@@ -28,13 +28,128 @@
     </section>
   </main>
 
+  <!-- Chart.js for graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="app.js"></script>
+  <script>
+    const dateInput = document.getElementById('date');
+    const weightInput = document.getElementById('weight');
+    const saveBtn = document.getElementById('saveBtn');
+    const ctx = document.getElementById('weightChart').getContext('2d');
+
+    let weightData = JSON.parse(localStorage.getItem('weights')) || {};
+    let weightChart = null;
+
+    function saveWeight() {
+      const date = dateInput.value;
+      const weight = parseFloat(weightInput.value);
+
+      if (!date || isNaN(weight)) {
+        alert("⚠️ Please enter a valid date and a number for weight.");
+        return;
+      }
+
+      weightData[date] = weight;
+      localStorage.setItem('weights', JSON.stringify(weightData));
+      weightInput.value = '';
+      showToast(`Saved entry for ${date}: ${weight} kg 🏋️‍♀️`);
+      renderChart();
+    }
+
+    function renderChart() {
+      const sortedDates = Object.keys(weightData).sort();
+      const weights = sortedDates.map(date => weightData[date]);
+
+      if (weightChart instanceof Chart) {
+        weightChart.destroy();
+      }
+
+      weightChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: sortedDates,
+          datasets: [{
+            label: 'Weight (kg)',
+            data: weights,
+            borderColor: '#4a90e2',
+            backgroundColor: 'rgba(74, 144, 226, 0.15)',
+            fill: true,
+            tension: 0.3,
+            pointRadius: 5,
+            pointBackgroundColor: '#4a90e2'
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: {
+              display: true
+            },
+            tooltip: {
+              callbacks: {
+                label: context => `${context.parsed.y} kg`
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              title: {
+                display: true,
+                text: 'Weight (kg)'
+              }
+            },
+            x: {
+              title: {
+                display: true,
+                text: 'Date'
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function showToast(msg) {
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    saveBtn.addEventListener('click', saveWeight);
+    renderChart();
+  </script>
+
+  <style>
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #4a90e2;
+      color: white;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-weight: bold;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      z-index: 999;
+      animation: fadeInOut 3s ease-in-out;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(20px); }
+    }
+  </style>
+
+  <!-- Optional service worker (only if present) -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')
         .then(reg => console.log('Service Worker registered ✅', reg))
-        .catch(err => console.error('Service Worker failed ❌', err));
+        .catch(err => console.warn('Service Worker registration failed ❌', err));
     }
   </script>
 </body>

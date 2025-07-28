@@ -19,6 +19,17 @@
       <label for="weight">Weight (kg):</label>
       <input type="number" id="weight" placeholder="Enter your weight" />
       <button id="saveBtn">💾 Save Entry</button>
+      <button id="installBtn" style="display:none; margin-top: 10px;">📲 Install App</button>
+    </section>
+
+    <section class="filter-section">
+      <label for="timeRange">View Range:</label>
+      <select id="timeRange">
+        <option value="7">Last 7 Days</option>
+        <option value="30">Last 30 Days</option>
+        <option value="365">Last Year</option>
+        <option value="all">All Time</option>
+      </select>
     </section>
 
     <section class="chart-section">
@@ -27,16 +38,36 @@
     </section>
   </main>
 
-  <!-- Chart.js for graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
     const dateInput = document.getElementById('date');
     const weightInput = document.getElementById('weight');
     const saveBtn = document.getElementById('saveBtn');
+    const installBtn = document.getElementById('installBtn');
     const ctx = document.getElementById('weightChart').getContext('2d');
+    const timeRange = document.getElementById('timeRange');
 
     let weightData = JSON.parse(localStorage.getItem('weights')) || {};
     let weightChart = null;
+    let deferredPrompt;
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'inline-block';
+    });
+
+    installBtn.addEventListener('click', () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        deferredPrompt.userChoice.then(choiceResult => {
+          if (choiceResult.outcome === 'accepted') {
+            console.log('User accepted the A2HS prompt');
+          }
+          deferredPrompt = null;
+        });
+      }
+    });
 
     function saveWeight() {
       const date = dateInput.value;
@@ -54,9 +85,21 @@
       renderChart();
     }
 
+    function filterData(range) {
+      const now = new Date();
+      return Object.keys(weightData)
+        .filter(date => {
+          if (range === 'all') return true;
+          const diff = (now - new Date(date)) / (1000 * 60 * 60 * 24);
+          return diff <= parseInt(range);
+        })
+        .sort();
+    }
+
     function renderChart() {
-      const sortedDates = Object.keys(weightData).sort();
-      const weights = sortedDates.map(date => weightData[date]);
+      const range = timeRange.value;
+      const filteredDates = filterData(range);
+      const weights = filteredDates.map(date => weightData[date]);
 
       if (weightChart instanceof Chart) {
         weightChart.destroy();
@@ -65,7 +108,7 @@
       weightChart = new Chart(ctx, {
         type: 'line',
         data: {
-          labels: sortedDates,
+          labels: filteredDates,
           datasets: [{
             label: 'Weight (kg)',
             data: weights,
@@ -80,9 +123,7 @@
         options: {
           responsive: true,
           plugins: {
-            legend: {
-              display: true
-            },
+            legend: { display: true },
             tooltip: {
               callbacks: {
                 label: context => `${context.parsed.y} kg`
@@ -92,16 +133,10 @@
           scales: {
             y: {
               beginAtZero: false,
-              title: {
-                display: true,
-                text: 'Weight (kg)'
-              }
+              title: { display: true, text: 'Weight (kg)' }
             },
             x: {
-              title: {
-                display: true,
-                text: 'Date'
-              }
+              title: { display: true, text: 'Date' }
             }
           }
         }
@@ -117,6 +152,7 @@
     }
 
     saveBtn.addEventListener('click', saveWeight);
+    timeRange.addEventListener('change', renderChart);
     renderChart();
   </script>
 
@@ -143,7 +179,6 @@
     }
   </style>
 
-  <!-- Optional service worker (only if present) -->
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('service-worker.js')

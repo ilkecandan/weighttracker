@@ -1,35 +1,43 @@
-/* ==== app.js ==== */
 const dateInput = document.getElementById('date');
 const weightInput = document.getElementById('weight');
 const saveBtn = document.getElementById('saveBtn');
 const ctx = document.getElementById('weightChart').getContext('2d');
 
+// Init localStorage data
 let weightData = JSON.parse(localStorage.getItem('weights')) || {};
+
+// Define chart variable outside function scope
+let weightChart = null;
 
 function saveWeight() {
   const date = dateInput.value;
   const weight = parseFloat(weightInput.value);
 
   if (!date || isNaN(weight)) {
-    alert("Please enter a valid date and weight!");
+    alert("⚠️ Please enter a valid date and a number for weight.");
     return;
   }
 
+  // Save to data object
   weightData[date] = weight;
   localStorage.setItem('weights', JSON.stringify(weightData));
-  renderChart();
+
+  // Clear input
   weightInput.value = '';
+  showToast(`Saved entry for ${date}: ${weight} kg 🏋️‍♀️`);
+
+  renderChart();
 }
 
 function renderChart() {
   const sortedDates = Object.keys(weightData).sort();
   const weights = sortedDates.map(date => weightData[date]);
 
-  if (window.weightChart) {
-    window.weightChart.destroy();
+  if (weightChart instanceof Chart) {
+    weightChart.destroy(); // Proper chart destroy
   }
 
-  window.weightChart = new Chart(ctx, {
+  weightChart = new Chart(ctx, {
     type: 'line',
     data: {
       labels: sortedDates,
@@ -37,11 +45,11 @@ function renderChart() {
         label: 'Weight (kg)',
         data: weights,
         borderColor: '#4a90e2',
-        backgroundColor: 'rgba(74, 144, 226, 0.2)',
+        backgroundColor: 'rgba(74, 144, 226, 0.15)',
         fill: true,
         tension: 0.3,
         pointRadius: 5,
-        pointBackgroundColor: '#4a90e2'
+        pointBackgroundColor: '#4a90e2',
       }]
     },
     options: {
@@ -49,6 +57,11 @@ function renderChart() {
       plugins: {
         legend: {
           display: true
+        },
+        tooltip: {
+          callbacks: {
+            label: context => `${context.parsed.y} kg`
+          }
         }
       },
       scales: {
@@ -68,6 +81,15 @@ function renderChart() {
       }
     }
   });
+}
+
+// Show simple toast
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
 }
 
 saveBtn.addEventListener('click', saveWeight);

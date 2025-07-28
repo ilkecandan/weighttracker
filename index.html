@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Weight Tracker</title>
+  <link rel="manifest" href="manifest.json" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="icon-192.png" />
+  <meta name="theme-color" content="#4a90e2" />
+</head>
+<body>
+  <main>
+    <h1>📅 Daily Weight Tracker</h1>
+
+    <section class="input-section">
+      <input type="date" id="date" />
+      <input type="number" id="weight" placeholder="Enter weight (kg)" />
+      <button id="saveBtn">💾 Save</button>
+    </section>
+
+    <section>
+      <canvas id="weightChart" width="400" height="200"></canvas>
+    </section>
+  </main>
+
+  <!-- Chart.js for graphing magic -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js"></script>
+
+  <!-- Optional PWA offline script -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(reg => console.log('Service Worker registered 🎉', reg))
+        .catch(err => console.error('Service Worker failed 😢', err));
+    }
+  </script>
+</body>
+</html>

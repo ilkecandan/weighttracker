@@ -37,12 +37,12 @@
 
     <section class="goal-section">
       <details open>
-        <summary><h2>🎯 Set a Goal</h2></summary>
+        <summary><h2>🎯 Current Goal: <span id="currentGoalDisplay">Not Set</span></h2></summary>
         <div class="goal-content">
           <div class="goal-input">
             <label for="targetWeight">Target Weight (kg):</label>
             <input type="number" id="targetWeight" placeholder="Your goal weight" step="0.1" />
-            <button id="setGoalBtn">Set Goal</button>
+            <button id="setGoalBtn">Update Goal</button>
           </div>
           <div id="goalProgress" class="progress-container">
             <!-- Progress will be shown here -->
@@ -52,15 +52,19 @@
     </section>
 
     <section class="filter-section">
-      <label for="timeRange">View Range:</label>
-      <select id="timeRange">
-        <option value="7">Last 7 Days</option>
-        <option value="30" selected>Last 30 Days</option>
-        <option value="90">Last 90 Days</option>
-        <option value="365">Last Year</option>
-        <option value="all">All Time</option>
-      </select>
-      <button id="exportBtn" class="secondary-btn">📤 Export Data</button>
+      <div class="filter-controls">
+        <div class="filter-group">
+          <label for="timeRange">View Range:</label>
+          <select id="timeRange">
+            <option value="7">Last 7 Days</option>
+            <option value="30" selected>Last 30 Days</option>
+            <option value="90">Last 90 Days</option>
+            <option value="365">Last Year</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+        <button id="exportBtn" class="secondary-btn">📤 Export CSV</button>
+      </div>
     </section>
 
     <section class="stats-section">
@@ -113,13 +117,13 @@
       </div>
     </section>
 
-    <footer class="creator-footer">
+    <div class="footer-section">
       <p>Made with ❤️ by <a href="https://ilkecandanbengi.com/" target="_blank">Ilke Candan Bengi</a></p>
-      <div class="creator-links">
+      <div class="footer-links">
         <a href="https://www.linkedin.com/in/ilkecandan/" target="_blank">Add me on LinkedIn</a>
         <a href="https://buymeacoffee.com/ilkecandan" target="_blank">Support me</a>
       </div>
-    </footer>
+    </div>
 
     <div id="installBanner" class="install-banner" style="display:none">
       <p>Install this app for a better experience!</p>

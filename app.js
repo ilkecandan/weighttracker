@@ -24,6 +24,7 @@ const editDate = document.getElementById('editDate');
 const editWeight = document.getElementById('editWeight');
 const saveEditBtn = document.getElementById('saveEditBtn');
 const deleteEntryBtn = document.getElementById('deleteEntryBtn');
+const currentGoalDisplay = document.getElementById('currentGoalDisplay');
 
 // Chart setup
 const ctx = document.getElementById('weightChart').getContext('2d');
@@ -186,6 +187,16 @@ function setWeightGoal() {
   
   updateGoalProgress();
   renderChart();
+  updateCurrentGoalDisplay();
+}
+
+// Update current goal display
+function updateCurrentGoalDisplay() {
+  if (goalData.target) {
+    currentGoalDisplay.textContent = `${goalData.target} kg`;
+  } else {
+    currentGoalDisplay.textContent = "Not Set";
+  }
 }
 
 // Update goal progress display
@@ -405,38 +416,54 @@ function deleteEntry(date) {
   }
 }
 
-// Export data
+// Export data as CSV
 function exportData() {
-  const data = {
-    weights: weightData,
-    goal: goalData.target || null,
-    exportedAt: new Date().toISOString()
-  };
+  const dates = Object.keys(weightData).sort();
+  if (dates.length === 0) {
+    showToast("⚠️ No data to export");
+    return;
+  }
 
-  const dataStr = JSON.stringify(data, null, 2);
-  const blob = new Blob([dataStr], { type: 'application/json' });
+  // Create CSV header
+  let csvContent = "Date,Weight (kg)\n";
+  
+  // Add data rows
+  dates.forEach(date => {
+    csvContent += `${formatDate(date, false, true)},${weightData[date]}\n`;
+  });
+
+  // Add goal if exists
+  if (goalData.target) {
+    csvContent += `\nGoal Weight,${goalData.target} kg`;
+  }
+
+  // Create download link
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `weight-tracker-export-${new Date().toISOString().split('T')[0]}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `weight-tracker-export-${new Date().toISOString().split('T')[0]}.json`;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
-
-  showToast("📤 Data exported successfully");
+  showToast("📤 Data exported as CSV");
 }
 
 // Filter data based on time range
 function getFilteredData(range) {
+  if (range === 'all') {
+    return Object.keys(weightData).sort();
+  }
+
   const now = new Date();
+  const rangeDays = parseInt(range);
+  const cutoffDate = new Date(now);
+  cutoffDate.setDate(cutoffDate.getDate() - rangeDays);
+  
   return Object.keys(weightData)
-    .filter(date => {
-      if (range === 'all') return true;
-      const diff = (now - new Date(date)) / (1000 * 60 * 60 * 24);
-      return diff <= parseInt(range);
-    })
+    .filter(date => new Date(date) >= cutoffDate)
     .sort();
 }
 
@@ -448,6 +475,11 @@ function renderChart() {
 
   if (weightChart instanceof Chart) {
     weightChart.destroy();
+  }
+
+  // Don't render chart if no data
+  if (sortedDates.length === 0) {
+    return;
   }
 
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
@@ -601,8 +633,11 @@ function triggerConfetti() {
 }
 
 // Format date for display
-function formatDate(dateStr, short = false) {
+function formatDate(dateStr, short = false, forExport = false) {
   const date = new Date(dateStr);
+  if (forExport) {
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit' });
+  }
   if (short) {
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
@@ -637,11 +672,11 @@ function initApp() {
   renderEntriesTable();
   updateStats();
   updateGoalProgress();
+  updateCurrentGoalDisplay();
   
   // Set target weight if exists
   if (goalData.target) {
     targetWeightInput.value = goalData.target;
-    updateGoalProgress();
   }
   
   // Focus weight input on load

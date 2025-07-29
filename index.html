@@ -36,15 +36,19 @@
     </section>
 
     <section class="goal-section">
-      <h2>🎯 Set a Goal</h2>
-      <div class="goal-input">
-        <label for="targetWeight">Target Weight (kg):</label>
-        <input type="number" id="targetWeight" placeholder="Your goal weight" step="0.1" />
-        <button id="setGoalBtn">Set Goal</button>
-      </div>
-      <div id="goalProgress" class="progress-container">
-        <!-- Progress will be shown here -->
-      </div>
+      <details open>
+        <summary><h2>🎯 Set a Goal</h2></summary>
+        <div class="goal-content">
+          <div class="goal-input">
+            <label for="targetWeight">Target Weight (kg):</label>
+            <input type="number" id="targetWeight" placeholder="Your goal weight" step="0.1" />
+            <button id="setGoalBtn">Set Goal</button>
+          </div>
+          <div id="goalProgress" class="progress-container">
+            <!-- Progress will be shown here -->
+          </div>
+        </div>
+      </details>
     </section>
 
     <section class="filter-section">
@@ -108,6 +112,14 @@
         </table>
       </div>
     </section>
+
+    <footer class="creator-footer">
+      <p>Made with ❤️ by <a href="https://ilkecandanbengi.com/" target="_blank">Ilke Candan Bengi</a></p>
+      <div class="creator-links">
+        <a href="https://www.linkedin.com/in/ilkecandan/" target="_blank">Add me on LinkedIn</a>
+        <a href="https://buymeacoffee.com/ilkecandan" target="_blank">Support me</a>
+      </div>
+    </footer>
 
     <div id="installBanner" class="install-banner" style="display:none">
       <p>Install this app for a better experience!</p>

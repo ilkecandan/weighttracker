@@ -48,8 +48,14 @@ main {
   margin: 0 auto;
   background: var(--bg-color);
   border-radius: var(--border-radius);
-  padding: 1rem;
+  padding: 1.2rem 1rem;
   box-shadow: var(--shadow);
+}
+
+.input-section,
+.goal-section,
+.entries-section {
+  margin-bottom: 2rem;
 }
 
 h1, h2, h3 {
@@ -101,8 +107,8 @@ h3 {
 }
 
 .input-section {
-  display: grid;
-  grid-template-columns: 1fr;
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
@@ -132,7 +138,7 @@ h3 {
 
 .button-group {
   display: flex;
-  gap: 1rem;
+  gap: 0.5rem;
   flex-wrap: wrap;
 }
 
@@ -192,20 +198,43 @@ button {
 
 /* Goal Section */
 .goal-section {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.goal-section details {
+  width: 100%;
+}
+
+.goal-section summary {
+  cursor: pointer;
+  outline: none;
+}
+
+.goal-section summary::-webkit-details-marker {
+  display: none;
+}
+
+.goal-section summary h2 {
+  display: inline;
+}
+
+.goal-content {
+  margin-top: 1rem;
 }
 
 .goal-input {
   display: flex;
   flex-direction: column;
+  gap: 1rem;
 }
 
 .progress-container {
   display: flex;
   flex-direction: column;
   justify-content: center;
+  margin-top: 1rem;
 }
 
 .progress-bar {
@@ -229,8 +258,8 @@ button {
 }
 
 .stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1rem;
 }
 
@@ -262,17 +291,13 @@ button {
 
 .chart-container {
   position: relative;
-  height: 60vh;
+  height: 50vh;
+  max-height: 300px;
   width: 100%;
 }
 
-canvas {
-  width: 100% !important;
-  height: 100% !important;
-  background: var(--card-bg);
-  border-radius: var(--border-radius);
-  padding: 1rem;
-  box-shadow: var(--shadow);
+[data-theme="dark"] canvas {
+  background: #243b55;
 }
 
 /* Entries Section */
@@ -320,6 +345,13 @@ canvas {
   font-weight: 600;
 }
 
+[data-theme="dark"] #entriesTable,
+[data-theme="dark"] #entriesTable th,
+[data-theme="dark"] #entriesTable td {
+  background: #1e2a3a;
+  color: #f0f0f0;
+}
+
 #entriesTable tr:hover {
   background: rgba(74, 144, 226, 0.1);
 }
@@ -329,6 +361,31 @@ canvas {
   font-size: 0.9rem;
   margin-right: 0.5rem;
   min-width: auto;
+}
+
+/* Footer */
+.creator-footer {
+  text-align: center;
+  margin-top: 2rem;
+  padding: 1rem;
+  font-size: 0.9rem;
+  color: var(--text-color);
+}
+
+.creator-footer a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.creator-footer a:hover {
+  text-decoration: underline;
+}
+
+.creator-links {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
 }
 
 /* Install Banner */
@@ -342,6 +399,7 @@ canvas {
   border-radius: var(--border-radius);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: space-between;
   width: calc(100% - 2rem);
@@ -352,13 +410,18 @@ canvas {
 
 .install-banner p {
   margin: 0;
-  margin-right: 1rem;
-  flex: 1;
+  margin-bottom: 1rem;
+  text-align: center;
 }
 
 .install-banner div {
   display: flex;
   gap: 0.5rem;
+  width: 100%;
+}
+
+.install-banner button {
+  flex: 1;
 }
 
 /* Modal */
@@ -401,12 +464,13 @@ canvas {
 
 .modal-button-group {
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-top: 1rem;
 }
 
 .modal-button-group button {
-  flex: 1;
+  width: 100%;
 }
 
 /* Toast */
@@ -442,50 +506,54 @@ canvas {
 /* Responsive Design */
 @media (min-width: 768px) {
   .input-section {
+    display: grid;
     grid-template-columns: 1fr 1fr;
   }
   
   .button-group {
     grid-column: span 2;
+    flex-direction: row;
   }
   
   .goal-section {
+    display: grid;
     grid-template-columns: 1fr 1fr;
+  }
+  
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   }
   
   main {
     padding: 2rem;
   }
+
+  .modal-button-group {
+    flex-direction: row;
+  }
 }
 
-@media (max-width: 480px) {
+@media (min-width: 480px) {
   .button-group {
-    flex-direction: column;
+    flex-direction: row;
   }
   
   .button-group button {
-    width: 100%;
-  }
-  
-  .modal-button-group {
-    flex-direction: column;
+    width: auto;
   }
   
   .install-banner {
-    flex-direction: column;
-    text-align: center;
+    flex-direction: row;
+    text-align: left;
   }
   
   .install-banner p {
-    margin-right: 0;
-    margin-bottom: 1rem;
+    margin-right: 1rem;
+    margin-bottom: 0;
   }
   
   .install-banner div {
-    width: 100%;
-  }
-  
-  .install-banner button {
-    flex: 1;
+    width: auto;
   }
 }

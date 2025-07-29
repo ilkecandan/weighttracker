@@ -38,12 +38,27 @@ dateInput.valueAsDate = new Date();
 let weightData = JSON.parse(localStorage.getItem('weights')) || {};
 let goalData = JSON.parse(localStorage.getItem('weightGoal')) || { target: null };
 
+// Check if app is installed
+function checkInstalled() {
+  if (window.matchMedia('(display-mode: standalone)').matches) {
+    installBtn.style.display = 'none';
+    installBanner.style.display = 'none';
+  }
+}
+
 // Theme management
 function applyTheme(isDark) {
   const theme = isDark ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
   themeBtn.textContent = isDark ? '☀️ Light Mode' : '🌙 Dark Mode';
+  
+  // Update chart theme if it exists
+  if (weightChart) {
+    weightChart.options.scales.x.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    weightChart.options.scales.y.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+    weightChart.update();
+  }
 }
 
 // Check for saved theme preference
@@ -61,16 +76,24 @@ window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   
-  // Show install button
-  if (installBtn) installBtn.style.display = 'inline-block';
-  
-  // Show banner after 30 seconds if not installed
-  setTimeout(() => {
-    if (!window.matchMedia('(display-mode: standalone)').matches) {
-      installBanner.style.display = 'flex';
-    }
-  }, 30000);
+  // Only show install button if not already installed
+  if (!window.matchMedia('(display-mode: standalone)').matches) {
+    installBtn.style.display = 'inline-block';
+    
+    // Show banner after 30 seconds if not installed
+    setTimeout(() => {
+      if (!window.matchMedia('(display-mode: standalone)').matches) {
+        const lastDismissed = localStorage.getItem('bannerDismissed');
+        if (!lastDismissed || Date.now() - lastDismissed > 7 * 24 * 60 * 60 * 1000) {
+          installBanner.style.display = 'flex';
+        }
+      }
+    }, 30000);
+  }
 });
+
+// Check installed status on load
+window.addEventListener('load', checkInstalled);
 
 // Install button click handler
 if (installBtn) {
@@ -128,7 +151,7 @@ function saveWeight() {
 
   // Check for existing entry
   if (weightData[date]) {
-    if (!confirm(`You already have an entry for ${date}. Overwrite?`)) {
+    if (!confirm(`You already have an entry for ${formatDate(date)}. Overwrite?`)) {
       return;
     }
   }
@@ -142,6 +165,10 @@ function saveWeight() {
   renderChart();
   renderEntriesTable();
   updateStats();
+  updateGoalProgress();
+  
+  // Focus weight input for next entry
+  weightInput.focus();
 }
 
 // Set weight goal
@@ -158,6 +185,7 @@ function setWeightGoal() {
   showToast(`🎯 Goal set to ${target} kg`);
   
   updateGoalProgress();
+  renderChart();
 }
 
 // Update goal progress display
@@ -333,6 +361,7 @@ function openEditModal(date) {
   editDate.value = date;
   editWeight.value = weightData[date];
   editModal.style.display = 'flex';
+  editWeight.focus();
 }
 
 // Save edited entry
@@ -421,6 +450,10 @@ function renderChart() {
     weightChart.destroy();
   }
 
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+  const textColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
+
   const goalAnnotation = goalData.target ? {
     type: 'line',
     mode: 'horizontal',
@@ -440,7 +473,7 @@ function renderChart() {
   weightChart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: sortedDates,
+      labels: sortedDates.map(date => formatDate(date, true)),
       datasets: [{
         label: 'Weight (kg)',
         data: weights,
@@ -449,7 +482,8 @@ function renderChart() {
         fill: true,
         tension: 0.3,
         pointRadius: 5,
-        pointBackgroundColor: 'var(--primary-color)'
+        pointBackgroundColor: 'var(--primary-color)',
+        pointHoverRadius: 7
       }]
     },
     options: {
@@ -471,13 +505,27 @@ function renderChart() {
           beginAtZero: false,
           title: {
             display: true,
-            text: 'Weight (kg)'
+            text: 'Weight (kg)',
+            color: textColor
+          },
+          grid: {
+            color: gridColor
+          },
+          ticks: {
+            color: textColor
           }
         },
         x: {
           title: {
             display: true,
-            text: 'Date'
+            text: 'Date',
+            color: textColor
+          },
+          grid: {
+            color: gridColor
+          },
+          ticks: {
+            color: textColor
           }
         }
       }
@@ -553,8 +601,11 @@ function triggerConfetti() {
 }
 
 // Format date for display
-function formatDate(dateStr) {
+function formatDate(dateStr, short = false) {
   const date = new Date(dateStr);
+  if (short) {
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
   return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
 }
 
@@ -592,6 +643,9 @@ function initApp() {
     targetWeightInput.value = goalData.target;
     updateGoalProgress();
   }
+  
+  // Focus weight input on load
+  weightInput.focus();
 }
 
 // Start the app
@@ -600,15 +654,14 @@ initApp();
 // Register service worker
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-// To this:
-navigator.serviceWorker.register('./service-worker.js', {
-  scope: './'
-});
+    navigator.serviceWorker.register('./service-worker.js', {
+      scope: './'
+    })
     .then(registration => {
-        console.log('ServiceWorker registration successful');
-      })
-      .catch(err => {
-        console.log('ServiceWorker registration failed: ', err);
-      });
+      console.log('ServiceWorker registration successful');
+    })
+    .catch(err => {
+      console.log('ServiceWorker registration failed: ', err);
+    });
   });
 }

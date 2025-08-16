@@ -3,173 +3,296 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="Plan your content strategy with Tempest Labs' elegant scrapbook-style calendar"/>
-  <title>Tempest Content Planner | Creative Content Calendar</title>
+  <meta name="description" content="Track your weight and health goals with this intuitive weight tracker app"/>
+  <title>Weight Tracker | Health & Fitness</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="stylesheet" href="styles.css"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
   <div class="app-container">
-    <!-- Main App -->
-    <section class="app-section" id="appSection">
-      <header>
-        <div class="logo">
-          <i class="fas fa-calendar-alt"></i>
-          <h1>Tempest <span> Content Planner</span></h1>
-        </div>
-        <div class="controls">
-          <button class="btn btn-secondary" id="prevWeekBtn">
-            <i class="fas fa-chevron-left"></i>
-          </button>
-          <button class="btn btn-today" id="todayBtn">Today</button>
-          <button class="btn btn-secondary" id="nextWeekBtn">
-            <i class="fas fa-chevron-right"></i>
-          </button>
-          <div class="week-display" id="weekDisplay"></div>
-          <div class="actions">
-            <button class="btn btn-export" id="printBtn">
-              <i class="fas fa-print"></i> Print
-            </button>
-            <button class="btn btn-export" id="exportPdfBtn">
-              <i class="fas fa-file-pdf"></i> PDF
-            </button>
-            <button class="btn btn-install" id="installBtn" style="display: none;">
-              <i class="fas fa-download"></i> Install App
+    <!-- Goal Section (Pinned at top) -->
+    <section class="goal-section pinned-goal">
+      <div class="goal-content">
+        <h2>Goal Weight</h2>
+        <div class="goal-display">
+          <span id="currentGoalDisplay">Not Set</span>
+          <div class="goal-actions">
+            <button class="btn btn-small" id="editGoalBtn">
+              <i class="fas fa-pencil-alt"></i>
             </button>
           </div>
         </div>
-      </header>
-
-      <div class="week-view">
-        <table class="week-table" id="weekTable">
-          <thead>
-            <tr><th>Time</th></tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="progress-container">
+          <div class="progress-bar">
+            <div class="progress-fill" id="goalProgress"></div>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div class="empty-state" id="emptyState">
-        <div class="scrapbook-paper">
-          <i class="fas fa-calendar-plus"></i>
-          <h3>Your week is looking empty</h3>
-          <p>Click on a time slot to add content</p>
-          <button class="btn btn-primary" id="addSampleContentBtn">
-            <i class="fas fa-magic"></i> Add Sample Content
+    <!-- Main App Content -->
+    <main>
+      <!-- Stats Section -->
+      <section class="stats-section">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Current Weight</h3>
+            <p id="currentWeight">-- kg</p>
+          </div>
+          <div class="stat-card">
+            <h3>Weekly Change</h3>
+            <p id="weeklyChange">-- kg</p>
+          </div>
+          <div class="stat-card">
+            <h3>Monthly Change</h3>
+            <p id="monthlyChange">-- kg</p>
+          </div>
+          <div class="stat-card">
+            <h3>Streak</h3>
+            <p id="streakCount">0 days</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Chart Section -->
+      <section class="chart-section">
+        <div class="section-header">
+          <h2>Progress Chart</h2>
+          <select id="timeRange" class="time-range-select">
+            <option value="week">Last 7 Days</option>
+            <option value="month">Last 30 Days</option>
+            <option value="3months">Last 3 Months</option>
+            <option value="year">Last Year</option>
+            <option value="all" selected>All Time</option>
+          </select>
+        </div>
+        <div class="chart-container">
+          <canvas id="weightChart"></canvas>
+          <div id="noDataMessage" class="empty-state">
+            <i class="fas fa-weight"></i>
+            <h3>No Data Yet</h3>
+            <p>Add your first weight entry to see your progress</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Input Section -->
+      <section class="input-section">
+        <h2>Add New Entry</h2>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="date">Date</label>
+            <input type="date" id="date" required>
+          </div>
+          <div class="form-group">
+            <label for="weight">Weight (kg)</label>
+            <input type="number" id="weight" step="0.1" min="30" max="300" placeholder="e.g. 72.5" required>
+          </div>
+        </div>
+        <div class="button-group">
+          <button type="button" class="btn btn-primary" id="saveBtn">
+            <i class="fas fa-save"></i> Save Entry
+          </button>
+          <button type="button" class="btn btn-secondary" id="themeBtn">
+            <i class="fas fa-moon"></i> Dark Mode
           </button>
         </div>
-      </div>
-      
-      <footer class="app-footer">
-        <div class="footer-links">
-          <a href="https://buymeacoffee.com/ilkecandan" target="_blank" class="footer-link">
-            <i class="fas fa-coffee"></i> Support Me
-          </a>
-          <a href="https://www.linkedin.com/in/ilkecandan/" target="_blank" class="footer-link">
-            <i class="fab fa-linkedin"></i> Let's Meet on LinkedIn
-          </a>
+      </section>
+
+      <!-- Filter Section -->
+      <section class="filter-section">
+        <div class="section-header">
+          <h2>Your Entries</h2>
+          <div class="filter-actions">
+            <input type="text" id="searchEntry" placeholder="Search entries...">
+            <button class="btn btn-export" id="exportBtn">
+              <i class="fas fa-file-excel"></i> Export
+            </button>
+          </div>
         </div>
-      </footer>
-    </section>
+        <div class="entries-table-container">
+          <table id="entriesTable">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Weight (kg)</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <!-- Quick Add FAB -->
+    <button class="fab" id="fabBtn">
+      <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- Quick Add Card -->
+    <div class="quick-add-card" id="quickAddCard">
+      <div class="quick-add-header">
+        <h3>Quick Add Today's Weight</h3>
+        <button class="btn btn-close" id="closeQuickAdd">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="form-group">
+        <input type="number" id="quickAddWeight" step="0.1" min="30" max="300" placeholder="Enter today's weight">
+      </div>
+      <button class="btn btn-primary" id="quickAddSubmit">
+        <i class="fas fa-check"></i> Save
+      </button>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav" id="bottomNav">
+      <button class="nav-item active" data-target="statsSection">
+        <i class="fas fa-chart-line"></i>
+        <span>Stats</span>
+      </button>
+      <button class="nav-item" data-target="inputSection">
+        <i class="fas fa-plus-circle"></i>
+        <span>Add</span>
+      </button>
+      <button class="nav-item" data-target="filterSection">
+        <i class="fas fa-history"></i>
+        <span>History</span>
+      </button>
+      <button class="nav-item" id="themeNavBtn">
+        <i class="fas fa-moon"></i>
+        <span>Theme</span>
+      </button>
+    </nav>
   </div>
 
-  <!-- Content Modal -->
-  <div class="modal" id="contentModal">
-    <div class="modal-content scrapbook-paper">
+  <!-- Edit Goal Modal -->
+  <div class="modal" id="goalModal">
+    <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modalTitle">Add Content</h3>
-        <button id="closeModal">&times;</button>
+        <h3>Set Weight Goal</h3>
+        <button class="close-modal" id="closeGoalModal">&times;</button>
       </div>
-      <form id="contentForm">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Content Title</label>
-            <input type="text" id="contentTitle" required>
-          </div>
-          <div class="form-group">
-            <label>Date</label>
-            <input type="date" id="contentDate" required>
-          </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="targetWeight">Target Weight (kg)</label>
+          <input type="number" id="targetWeight" step="0.1" min="30" max="300" placeholder="Enter your goal weight">
         </div>
+        <div class="modal-button-group">
+          <button type="button" class="btn btn-secondary" id="noGoalBtn">
+            <i class="fas fa-ban"></i> No Goal
+          </button>
+          <button type="button" class="btn btn-primary" id="setGoalBtn">
+            <i class="fas fa-bullseye"></i> Set Goal
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Time</label>
-            <input type="time" id="contentStartTime" required>
-          </div>
-          <div class="form-group">
-            <label>Platform</label>
-            <select id="contentPlatform" required>
-              <option value="Instagram">Instagram</option>
-              <option value="Facebook">Facebook</option>
-              <option value="Twitter">Twitter</option>
-              <option value="LinkedIn">LinkedIn</option>
-              <option value="TikTok">TikTok</option>
-              <option value="YouTube">YouTube</option>
-              <option value="Pinterest">Pinterest</option>
-              <option value="Blog">Blog</option>
-              <option value="Email">Email Newsletter</option>
-            </select>
-          </div>
+  <!-- Edit Entry Modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Entry</h3>
+        <button class="close-modal" id="closeModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="editDate">Date</label>
+          <input type="date" id="editDate" required>
         </div>
+        <div class="form-group">
+          <label for="editWeight">Weight (kg)</label>
+          <input type="number" id="editWeight" step="0.1" required>
+        </div>
+        <div class="modal-button-group">
+          <button type="button" class="btn btn-danger" id="deleteEntryBtn">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+          <button type="button" class="btn btn-primary" id="saveEditBtn">
+            <i class="fas fa-save"></i> Save Changes
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Content Type</label>
-            <select id="contentType" required>
-              <option value="Image">Image Post</option>
-              <option value="Video">Video</option>
-              <option value="Carousel">Carousel</option>
-              <option value="Story">Story</option>
-              <option value="Reel">Reel</option>
-              <option value="Live">Live Stream</option>
-              <option value="Article">Article</option>
-              <option value="Poll">Poll</option>
-              <option value="Guide">Guide</option>
-            </select>
+  <!-- Onboarding Modal -->
+  <div class="modal onboarding-modal" id="onboardingModal">
+    <div class="modal-content">
+      <div class="onboarding-steps">
+        <!-- Step 1 -->
+        <div class="onboarding-step active">
+          <div class="onboarding-icon">
+            <i class="fas fa-weight"></i>
           </div>
-          <div class="form-group">
-            <label>Audience Stage</label>
-            <select id="contentAudience" required>
-              <option value="Awareness">Awareness</option>
-              <option value="Consideration">Consideration</option>
-              <option value="Decision">Decision</option>
-              <option value="Retention">Retention</option>
-              <option value="Advocacy">Advocacy</option>
-            </select>
+          <h3>Welcome to Weight Tracker</h3>
+          <p>Track your weight journey with our simple and intuitive app.</p>
+          <div class="onboarding-marker" data-target="fabBtn" data-position="top">
+            <p>The Quick Add button lets you quickly log today's weight</p>
           </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group full-width">
-            <label>Description</label>
-            <textarea id="contentDescription" rows="2" placeholder="What's this content about?" required></textarea>
+        
+        <!-- Step 2 -->
+        <div class="onboarding-step">
+          <div class="onboarding-icon">
+            <i class="fas fa-bullseye"></i>
+          </div>
+          <h3>Set Your Goal</h3>
+          <p>Set a target weight to track your progress and stay motivated.</p>
+          <div class="onboarding-marker" data-target="currentGoalDisplay" data-position="bottom">
+            <p>Your goal weight is always visible at the top</p>
           </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-group full-width">
-            <label>Caption / Key Message</label>
-            <textarea id="contentCaption" rows="3" placeholder="Write your caption here..." required></textarea>
+        
+        <!-- Step 3 -->
+        <div class="onboarding-step">
+          <div class="onboarding-icon">
+            <i class="fas fa-chart-line"></i>
+          </div>
+          <h3>View Your Progress</h3>
+          <p>See your weight trends over time with our interactive chart.</p>
+          <div class="onboarding-marker" data-target="weightChart" data-position="top">
+            <p>Filter the chart to see different time periods</p>
           </div>
         </div>
-
-        <div class="form-actions">
-          <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Content</button>
-          <button type="button" class="btn btn-danger" id="deleteBtn">Delete</button>
-        </div>
-      </form>
+      </div>
+      <div class="onboarding-controls">
+        <button class="btn btn-secondary" id="onboardingPrev">
+          <i class="fas fa-chevron-left"></i> Back
+        </button>
+        <button class="btn btn-primary" id="onboardingNext">
+          Next <i class="fas fa-chevron-right"></i>
+        </button>
+        <button class="btn btn-skip" id="onboardingClose">
+          Skip Tutorial
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
 
-  <script src="script.js"></script>
+  <!-- Install Banner -->
+  <div class="install-banner" id="installBanner">
+    <p>Install Weight Tracker for a better experience</p>
+    <div>
+      <button class="btn btn-secondary" id="dismissBanner">Not Now</button>
+      <button class="btn btn-primary" id="installBannerBtn">
+        <i class="fas fa-download"></i> Install
+      </button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.2"></script>
+  <script src="app.js"></script>
 </body>
 </html>

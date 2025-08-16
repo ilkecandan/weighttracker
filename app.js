@@ -10,13 +10,10 @@ const elements = {
   timeRange: document.getElementById('timeRange'),
   exportBtn: document.getElementById('exportBtn'),
   themeBtn: document.getElementById('themeBtn'),
-  themeNavBtn: document.getElementById('themeNavBtn'),
   targetWeightInput: document.getElementById('targetWeight'),
   setGoalBtn: document.getElementById('setGoalBtn'),
-  noGoalBtn: document.getElementById('noGoalBtn'),
+  removeGoalBtn: document.getElementById('removeGoalBtn'),
   goalProgress: document.getElementById('goalProgress'),
-  currentGoalDisplay: document.getElementById('currentGoalDisplay'),
-  editGoalBtn: document.getElementById('editGoalBtn'),
   currentWeightEl: document.getElementById('currentWeight'),
   weeklyChangeEl: document.getElementById('weeklyChange'),
   monthlyChangeEl: document.getElementById('monthlyChange'),
@@ -24,25 +21,26 @@ const elements = {
   entriesTable: document.getElementById('entriesTable').querySelector('tbody'),
   searchEntry: document.getElementById('searchEntry'),
   editModal: document.getElementById('editModal'),
-  goalModal: document.getElementById('goalModal'),
   closeModal: document.querySelector('.close-modal'),
-  closeGoalModal: document.getElementById('closeGoalModal'),
   editDate: document.getElementById('editDate'),
   editWeight: document.getElementById('editWeight'),
   saveEditBtn: document.getElementById('saveEditBtn'),
   deleteEntryBtn: document.getElementById('deleteEntryBtn'),
+  currentGoalDisplay: document.getElementById('currentGoalDisplay'),
   fabBtn: document.getElementById('fabBtn'),
   quickAddCard: document.getElementById('quickAddCard'),
   quickAddWeight: document.getElementById('quickAddWeight'),
   quickAddSubmit: document.getElementById('quickAddSubmit'),
   closeQuickAdd: document.getElementById('closeQuickAdd'),
+  addSampleDataBtn: document.getElementById('addSampleDataBtn'),
   onboardingModal: document.getElementById('onboardingModal'),
   onboardingNext: document.getElementById('onboardingNext'),
+  onboardingNext2: document.getElementById('onboardingNext2'),
   onboardingPrev: document.getElementById('onboardingPrev'),
+  onboardingPrev2: document.getElementById('onboardingPrev2'),
   onboardingClose: document.getElementById('onboardingClose'),
-  onboardingSteps: document.querySelectorAll('.onboarding-step'),
-  bottomNav: document.getElementById('bottomNav'),
-  navItems: document.querySelectorAll('.nav-item')
+  showHelp: document.getElementById('showHelp'),
+  goalBanner: document.getElementById('goalBanner')
 };
 
 // Chart setup
@@ -50,7 +48,6 @@ const ctx = document.getElementById('weightChart').getContext('2d');
 let weightChart = null;
 let deferredPrompt = null;
 let currentlyEditingId = null;
-let currentOnboardingStep = 0;
 
 // Initialize with today's date
 elements.dateInput.valueAsDate = new Date();
@@ -109,8 +106,7 @@ function applyTheme(isDark) {
   const theme = isDark ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
-  elements.themeBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i> Light Mode' : '<i class="fas fa-moon"></i> Dark Mode';
-  elements.themeNavBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i><span>Light</span>' : '<i class="fas fa-moon"></i><span>Dark</span>';
+  elements.themeBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
   
   // Update chart theme if it exists
   if (weightChart) {
@@ -142,44 +138,19 @@ function checkFirstVisit() {
 // Onboarding flow
 function showOnboarding() {
   elements.onboardingModal.style.display = 'flex';
-  showOnboardingStep(0);
-}
-
-function showOnboardingStep(step) {
-  currentOnboardingStep = step;
-  elements.onboardingSteps.forEach((s, i) => {
-    s.style.display = i === step ? 'block' : 'none';
-  });
-  
-  elements.onboardingPrev.style.display = step === 0 ? 'none' : 'block';
-  elements.onboardingNext.style.display = step === elements.onboardingSteps.length - 1 ? 'none' : 'block';
+  document.querySelector('.onboarding-step').classList.add('active');
 }
 
 // Format date for display
-function formatDate(dateString, short = false, excelFormat = false) {
+function formatDate(dateString, short = false, forExport = false) {
   const date = new Date(dateString);
-  
-  if (excelFormat) {
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
+  if (forExport) {
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
   }
-  
   if (short) {
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    });
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }
-  
-  return date.toLocaleDateString('en-US', {
-    weekday: 'short',
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric'
-  });
+  return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
 }
 
 // Show toast notification
@@ -252,7 +223,7 @@ function quickAddWeight() {
 
 // Set weight goal
 function setWeightGoal() {
-  const target = parseFloat(elements.targetWeightInput.value);
+  const target = parseFloat(prompt("Enter your goal weight in kg:"));
   
   if (isNaN(target)) {
     showToast("⚠️ Please enter a valid target weight");
@@ -266,79 +237,28 @@ function setWeightGoal() {
   updateGoalProgress();
   renderChart();
   updateCurrentGoalDisplay();
-  elements.goalModal.style.display = 'none';
 }
 
 // Remove weight goal
 function removeWeightGoal() {
-  goalData.target = null;
-  localStorage.setItem('weightGoal', JSON.stringify(goalData));
-  showToast("🎯 Goal weight removed");
-  
-  updateGoalProgress();
-  renderChart();
-  updateCurrentGoalDisplay();
-  elements.goalModal.style.display = 'none';
+  if (confirm("Are you sure you want to remove your goal weight?")) {
+    goalData.target = null;
+    localStorage.setItem('weightGoal', JSON.stringify(goalData));
+    showToast("Goal weight removed");
+    updateCurrentGoalDisplay();
+    renderChart();
+  }
 }
 
 // Update current goal display
 function updateCurrentGoalDisplay() {
   if (goalData.target) {
     elements.currentGoalDisplay.textContent = `${goalData.target} kg`;
+    elements.goalBanner.style.display = 'flex';
   } else {
     elements.currentGoalDisplay.textContent = "Not Set";
+    elements.goalBanner.style.display = 'none';
   }
-}
-
-// Update goal progress
-function updateGoalProgress() {
-  if (!goalData.target) {
-    elements.goalProgress.style.width = '0%';
-    return;
-  }
-
-  const dates = Object.keys(weightData).sort();
-  if (dates.length === 0) {
-    elements.goalProgress.style.width = '0%';
-    return;
-  }
-
-  const latestWeight = weightData[dates[dates.length - 1]];
-  const progress = ((latestWeight - goalData.target) / (weightData[dates[0]] - goalData.target)) * 100;
-  const progressPercent = Math.min(100, Math.max(0, 100 - progress));
-
-  elements.goalProgress.style.width = `${progressPercent}%`;
-}
-
-// Get filtered data based on time range
-function getFilteredData(range) {
-  const now = new Date();
-  const dates = Object.keys(weightData).sort();
-  
-  if (dates.length === 0) return [];
-  
-  if (range === 'all') return dates;
-  
-  const cutoffDate = new Date();
-  
-  switch (range) {
-    case 'week':
-      cutoffDate.setDate(now.getDate() - 7);
-      break;
-    case 'month':
-      cutoffDate.setMonth(now.getMonth() - 1);
-      break;
-    case '3months':
-      cutoffDate.setMonth(now.getMonth() - 3);
-      break;
-    case 'year':
-      cutoffDate.setFullYear(now.getFullYear() - 1);
-      break;
-    default:
-      return dates;
-  }
-  
-  return dates.filter(date => new Date(date) >= cutoffDate);
 }
 
 // Enhanced Excel export
@@ -367,13 +287,6 @@ function exportData() {
   // Add goal if exists
   if (goalData.target) {
     csvContent += `Goal Weight,${goalData.target} kg\n`;
-    
-    // Calculate progress
-    const latestWeight = weightData[dates[dates.length - 1]];
-    const progress = ((latestWeight - goalData.target) / (weightData[dates[0]] - goalData.target)) * 100;
-    const progressPercent = Math.min(100, Math.max(0, 100 - progress));
-    
-    csvContent += `Progress Toward Goal,${progressPercent.toFixed(1)}%\n`;
   }
 
   // Create download link
@@ -390,6 +303,34 @@ function exportData() {
   showToast("📤 Data exported as CSV (Excel-friendly)");
 }
 
+// Get filtered data based on time range
+function getFilteredData(range) {
+  const allDates = Object.keys(weightData).sort();
+  if (range === 'all') return allDates;
+
+  const now = new Date();
+  let cutoffDate = new Date();
+
+  switch (range) {
+    case 'week':
+      cutoffDate.setDate(now.getDate() - 7);
+      break;
+    case 'month':
+      cutoffDate.setMonth(now.getMonth() - 1);
+      break;
+    case '3months':
+      cutoffDate.setMonth(now.getMonth() - 3);
+      break;
+    case 'year':
+      cutoffDate.setFullYear(now.getFullYear() - 1);
+      break;
+    default:
+      return allDates;
+  }
+
+  return allDates.filter(date => new Date(date) >= cutoffDate);
+}
+
 // Enhanced chart rendering with animations
 function renderChart() {
   const range = elements.timeRange ? elements.timeRange.value : 'all';
@@ -402,7 +343,7 @@ function renderChart() {
 
   if (sortedDates.length === 0) {
     document.getElementById('weightChart').style.display = 'none';
-    document.getElementById('noDataMessage').style.display = 'block';
+    document.getElementById('noDataMessage').style.display = 'flex';
     return;
   }
 
@@ -530,47 +471,43 @@ function renderChart() {
 
 // Render entries table
 function renderEntriesTable(searchTerm = '') {
-  const tableBody = elements.entriesTable;
-  tableBody.innerHTML = '';
+  const tbody = elements.entriesTable;
+  tbody.innerHTML = '';
 
-  let dates = Object.keys(weightData).sort().reverse();
+  let sortedDates = Object.keys(weightData).sort().reverse();
   
   if (searchTerm) {
-    const searchLower = searchTerm.toLowerCase();
-    dates = dates.filter(date => {
-      const formattedDate = formatDate(date).toLowerCase();
-      const weight = weightData[date].toString().toLowerCase();
-      return formattedDate.includes(searchLower) || weight.includes(searchLower);
+    const term = searchTerm.toLowerCase();
+    sortedDates = sortedDates.filter(date => {
+      return formatDate(date).toLowerCase().includes(term) || 
+             weightData[date].toString().includes(term);
     });
   }
 
-  if (dates.length === 0) {
-    const row = document.createElement('tr');
-    row.innerHTML = `<td colspan="3" class="no-entries">No entries found</td>`;
-    tableBody.appendChild(row);
+  if (sortedDates.length === 0) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td colspan="3" class="empty-state">No entries found</td>`;
+    tbody.appendChild(tr);
     return;
   }
 
-  dates.forEach(date => {
-    const row = document.createElement('tr');
-    row.dataset.date = date;
-    
-    row.innerHTML = `
+  sortedDates.forEach(date => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
       <td>${formatDate(date)}</td>
       <td>${weightData[date]} kg</td>
       <td class="actions">
-        <button class="btn btn-small edit-btn" data-date="${date}">
+        <button class="btn btn-small btn-secondary edit-btn" data-id="${date}">
           <i class="fas fa-edit"></i>
         </button>
       </td>
     `;
-    
-    tableBody.appendChild(row);
+    tbody.appendChild(tr);
   });
 
   // Add event listeners to edit buttons
   document.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', () => editEntry(btn.dataset.date));
+    btn.addEventListener('click', () => editEntry(btn.dataset.id));
   });
 }
 
@@ -584,8 +521,6 @@ function editEntry(date) {
 
 // Save edited entry
 function saveEditedEntry() {
-  if (!currentlyEditingId) return;
-
   const newDate = elements.editDate.value;
   const newWeight = parseFloat(elements.editWeight.value);
 
@@ -594,16 +529,16 @@ function saveEditedEntry() {
     return;
   }
 
-  // If date changed, we need to delete old entry and create new one
+  // If date changed, we need to remove old entry and add new one
   if (currentlyEditingId !== newDate) {
     delete weightData[currentlyEditingId];
   }
 
   weightData[newDate] = newWeight;
   localStorage.setItem('weights', encryptData(weightData));
-
-  showToast(`✅ Updated entry for ${formatDate(newDate)}: ${newWeight} kg`);
+  
   elements.editModal.style.display = 'none';
+  showToast("✅ Entry updated successfully");
   
   renderChart();
   renderEntriesTable();
@@ -613,87 +548,150 @@ function saveEditedEntry() {
 
 // Delete entry
 function deleteEntry(date) {
-  if (!confirm(`Delete entry for ${formatDate(date)}?`)) return;
-
-  delete weightData[date];
-  localStorage.setItem('weights', encryptData(weightData));
-
-  showToast(`🗑️ Deleted entry for ${formatDate(date)}`);
-  
-  renderChart();
-  renderEntriesTable();
-  updateStats();
-  updateGoalProgress();
+  if (confirm(`Are you sure you want to delete the entry for ${formatDate(date)}?`)) {
+    delete weightData[date];
+    localStorage.setItem('weights', encryptData(weightData));
+    showToast("🗑️ Entry deleted");
+    
+    renderChart();
+    renderEntriesTable();
+    updateStats();
+    updateGoalProgress();
+  }
 }
 
 // Update stats
 function updateStats() {
   const dates = Object.keys(weightData).sort();
   if (dates.length === 0) {
-    elements.currentWeightEl.textContent = '-- kg';
-    elements.weeklyChangeEl.textContent = '-- kg';
-    elements.monthlyChangeEl.textContent = '-- kg';
+    elements.currentWeightEl.textContent = '-';
+    elements.weeklyChangeEl.textContent = '-';
+    elements.monthlyChangeEl.textContent = '-';
     elements.streakCountEl.textContent = '0 days';
     return;
   }
 
-  // Current weight
-  const latestWeight = weightData[dates[dates.length - 1]];
-  elements.currentWeightEl.textContent = `${latestWeight} kg`;
+  // Current weight (most recent entry)
+  const currentWeight = weightData[dates[dates.length - 1]];
+  elements.currentWeightEl.textContent = `${currentWeight} kg`;
 
-  // Weekly change
-  const oneWeekAgo = new Date();
-  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-  const weeklyEntries = dates.filter(date => new Date(date) >= oneWeekAgo);
-  
-  if (weeklyEntries.length >= 2) {
-    const change = latestWeight - weightData[weeklyEntries[0]];
-    elements.weeklyChangeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(1)} kg`;
-    elements.weeklyChangeEl.style.color = change < 0 ? 'var(--success-color)' : change > 0 ? 'var(--danger-color)' : 'inherit';
-  } else {
-    elements.weeklyChangeEl.textContent = '-- kg';
-  }
-
-  // Monthly change
-  const oneMonthAgo = new Date();
-  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
-  const monthlyEntries = dates.filter(date => new Date(date) >= oneMonthAgo);
-  
-  if (monthlyEntries.length >= 2) {
-    const change = latestWeight - weightData[monthlyEntries[0]];
-    elements.monthlyChangeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(1)} kg`;
-    elements.monthlyChangeEl.style.color = change < 0 ? 'var(--success-color)' : change > 0 ? 'var(--danger-color)' : 'inherit';
-  } else {
-    elements.monthlyChangeEl.textContent = '-- kg';
-  }
-
-  // Streak calculation
-  let streak = 0;
-  const today = new Date().toISOString().split('T')[0];
-  const yesterday = new Date();
-  yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
-
-  if (weightData[today]) {
-    streak = 1;
-    let checkDate = new Date(yesterday);
+  // Weekly change (last entry vs entry 7 days before)
+  if (dates.length >= 2) {
+    const lastDate = new Date(dates[dates.length - 1]);
+    const weekAgo = new Date(lastDate);
+    weekAgo.setDate(weekAgo.getDate() - 7);
     
-    while (weightData[checkDate.toISOString().split('T')[0]]) {
-      streak++;
-      checkDate.setDate(checkDate.getDate() - 1);
-    }
-  } else if (weightData[yesterdayStr]) {
-    streak = 1;
-    let checkDate = new Date(yesterday);
-    checkDate.setDate(checkDate.getDate() - 1);
+    const weekAgoDate = weekAgo.toISOString().split('T')[0];
+    const weekAgoWeight = weightData[weekAgoDate];
     
-    while (weightData[checkDate.toISOString().split('T')[0]]) {
-      streak++;
-      checkDate.setDate(checkDate.getDate() - 1);
+    if (weekAgoWeight) {
+      const change = currentWeight - weekAgoWeight;
+      const changeText = change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
+      elements.weeklyChangeEl.textContent = `${changeText} kg`;
+      elements.weeklyChangeEl.style.color = change < 0 ? 'var(--success-color)' : change > 0 ? 'var(--danger-color)' : 'inherit';
+    } else {
+      elements.weeklyChangeEl.textContent = 'N/A';
     }
+  } else {
+    elements.weeklyChangeEl.textContent = 'N/A';
   }
 
+  // Monthly change (last entry vs entry 30 days before)
+  if (dates.length >= 2) {
+    const lastDate = new Date(dates[dates.length - 1]);
+    const monthAgo = new Date(lastDate);
+    monthAgo.setDate(monthAgo.getDate() - 30);
+    
+    const monthAgoDate = monthAgo.toISOString().split('T')[0];
+    const monthAgoWeight = weightData[monthAgoDate];
+    
+    if (monthAgoWeight) {
+      const change = currentWeight - monthAgoWeight;
+      const changeText = change > 0 ? `+${change.toFixed(1)}` : change.toFixed(1);
+      elements.monthlyChangeEl.textContent = `${changeText} kg`;
+      elements.monthlyChangeEl.style.color = change < 0 ? 'var(--success-color)' : change > 0 ? 'var(--danger-color)' : 'inherit';
+    } else {
+      elements.monthlyChangeEl.textContent = 'N/A';
+    }
+  } else {
+    elements.monthlyChangeEl.textContent = 'N/A';
+  }
+
+  // Streak calculation (consecutive days with entries)
+  let streak = 1;
+  for (let i = dates.length - 1; i > 0; i--) {
+    const currentDate = new Date(dates[i]);
+    const prevDate = new Date(dates[i - 1]);
+    const diffTime = currentDate - prevDate;
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    
+    if (diffDays === 1) {
+      streak++;
+    } else {
+      break;
+    }
+  }
   elements.streakCountEl.textContent = `${streak} day${streak !== 1 ? 's' : ''}`;
+}
+
+// Update goal progress
+function updateGoalProgress() {
+  if (!goalData.target) return;
+
+  const dates = Object.keys(weightData).sort();
+  if (dates.length === 0) return;
+
+  const currentWeight = weightData[dates[dates.length - 1]];
+  const progress = ((goalData.target - currentWeight) / Math.abs(goalData.target - currentWeight)) * -1;
+  
+  // Update progress bar if it exists
+  const progressBar = document.getElementById('goalProgressBar');
+  if (progressBar) {
+    progressBar.style.width = `${Math.abs(progress) * 100}%`;
+    progressBar.style.backgroundColor = progress < 0 ? 'var(--danger-color)' : 'var(--success-color)';
+  }
+}
+
+// Add sample data for new users
+function addSampleData() {
+  if (Object.keys(weightData).length > 0 && !confirm("This will add sample data. Your existing data will be preserved. Continue?")) {
+    return;
+  }
+
+  const today = new Date();
+  const sampleData = {};
+  
+  // Generate 30 days of sample data with a downward trend
+  for (let i = 30; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(date.getDate() - i);
+    const dateStr = date.toISOString().split('T')[0];
+    
+    // Skip if user already has data for this date
+    if (weightData[dateStr]) continue;
+    
+    // Generate weight with downward trend and some randomness
+    const baseWeight = 75 - (i * 0.1);
+    const randomFluctuation = (Math.random() * 0.5) - 0.25;
+    sampleData[dateStr] = parseFloat((baseWeight + randomFluctuation).toFixed(1));
+  }
+  
+  // Merge with existing data
+  weightData = { ...sampleData, ...weightData };
+  localStorage.setItem('weights', encryptData(weightData));
+  
+  // Set a sample goal if none exists
+  if (!goalData.target) {
+    goalData.target = 72;
+    localStorage.setItem('weightGoal', JSON.stringify(goalData));
+  }
+  
+  showToast("📊 Sample data added");
+  renderChart();
+  renderEntriesTable();
+  updateStats();
+  updateGoalProgress();
+  updateCurrentGoalDisplay();
 }
 
 // Initialize the app
@@ -706,24 +704,14 @@ function initApp() {
   updateGoalProgress();
   updateCurrentGoalDisplay();
   
-  if (goalData.target) {
-    elements.targetWeightInput.value = goalData.target;
-  }
-  
-  // Set today's date by default
-  elements.dateInput.valueAsDate = new Date();
+  // Focus weight input on page load
   elements.weightInput.focus();
 }
 
 // Event listeners
 elements.saveBtn.addEventListener('click', saveWeight);
 elements.setGoalBtn.addEventListener('click', setWeightGoal);
-elements.noGoalBtn.addEventListener('click', removeWeightGoal);
-elements.editGoalBtn.addEventListener('click', () => {
-  elements.targetWeightInput.value = goalData.target || '';
-  elements.goalModal.style.display = 'flex';
-});
-elements.closeGoalModal.addEventListener('click', () => elements.goalModal.style.display = 'none');
+elements.removeGoalBtn.addEventListener('click', removeWeightGoal);
 elements.exportBtn.addEventListener('click', exportData);
 elements.timeRange.addEventListener('change', renderChart);
 elements.searchEntry.addEventListener('input', (e) => renderEntriesTable(e.target.value));
@@ -735,62 +723,52 @@ elements.deleteEntryBtn.addEventListener('click', () => {
     elements.editModal.style.display = 'none';
   }
 });
-elements.fabBtn.addEventListener('click', () => {
-  elements.quickAddCard.classList.toggle('active');
-});
-elements.closeQuickAdd.addEventListener('click', () => {
-  elements.quickAddCard.classList.remove('active');
-});
-elements.quickAddSubmit.addEventListener('click', quickAddWeight);
-elements.onboardingNext.addEventListener('click', () => showOnboardingStep(currentOnboardingStep + 1));
-elements.onboardingPrev.addEventListener('click', () => showOnboardingStep(currentOnboardingStep - 1));
-elements.onboardingClose.addEventListener('click', () => elements.onboardingModal.style.display = 'none');
 elements.themeBtn.addEventListener('click', () => {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   applyTheme(!isDark);
 });
-elements.themeNavBtn.addEventListener('click', () => {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  applyTheme(!isDark);
+elements.fabBtn.addEventListener('click', () => {
+  elements.quickAddCard.classList.toggle('active');
 });
+elements.quickAddSubmit.addEventListener('click', quickAddWeight);
+elements.closeQuickAdd.addEventListener('click', () => {
+  elements.quickAddCard.classList.remove('active');
+});
+elements.addSampleDataBtn.addEventListener('click', addSampleData);
+elements.showHelp.addEventListener('click', showOnboarding);
 
 // Bottom nav navigation
-elements.navItems.forEach(item => {
+document.querySelectorAll('.nav-item').forEach(item => {
   item.addEventListener('click', function() {
     const target = this.getAttribute('data-target');
-    document.querySelectorAll('.main-section').forEach(section => {
+    document.querySelectorAll('section').forEach(section => {
       section.style.display = 'none';
     });
-    
-    if (target) {
-      document.getElementById(target).style.display = 'block';
-    }
+    document.getElementById(target.replace('Section', '')).style.display = 'block';
     
     // Update active state
-    elements.navItems.forEach(navItem => {
+    document.querySelectorAll('.nav-item').forEach(navItem => {
       navItem.classList.toggle('active', navItem === this);
     });
-    
-    // Scroll to top
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 });
 
-// PWA installation
+// PWA Installation
 window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
   elements.installBanner.style.display = 'flex';
 });
 
-elements.installBannerBtn.addEventListener('click', async () => {
+elements.installBannerBtn.addEventListener('click', () => {
   if (deferredPrompt) {
     deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') {
-      elements.installBanner.style.display = 'none';
-    }
-    deferredPrompt = null;
+    deferredPrompt.userChoice.then((choiceResult) => {
+      if (choiceResult.outcome === 'accepted') {
+        elements.installBanner.style.display = 'none';
+      }
+      deferredPrompt = null;
+    });
   }
 });
 
@@ -798,18 +776,30 @@ elements.dismissBanner.addEventListener('click', () => {
   elements.installBanner.style.display = 'none';
 });
 
-// Close modals when clicking outside
-window.addEventListener('click', (e) => {
-  if (e.target === elements.editModal) {
-    elements.editModal.style.display = 'none';
-  }
-  if (e.target === elements.goalModal) {
-    elements.goalModal.style.display = 'none';
-  }
-  if (e.target === elements.onboardingModal) {
-    elements.onboardingModal.style.display = 'none';
-  }
+// Onboarding navigation
+elements.onboardingNext.addEventListener('click', () => {
+  document.querySelector('.onboarding-step.active').classList.remove('active');
+  document.querySelectorAll('.onboarding-step')[1].classList.add('active');
 });
 
-// Start the app
+elements.onboardingNext2.addEventListener('click', () => {
+  document.querySelector('.onboarding-step.active').classList.remove('active');
+  document.querySelectorAll('.onboarding-step')[2].classList.add('active');
+});
+
+elements.onboardingPrev.addEventListener('click', () => {
+  document.querySelector('.onboarding-step.active').classList.remove('active');
+  document.querySelectorAll('.onboarding-step')[0].classList.add('active');
+});
+
+elements.onboardingPrev2.addEventListener('click', () => {
+  document.querySelector('.onboarding-step.active').classList.remove('active');
+  document.querySelectorAll('.onboarding-step')[1].classList.add('active');
+});
+
+elements.onboardingClose.addEventListener('click', () => {
+  elements.onboardingModal.style.display = 'none';
+});
+
+// Start the app when DOM is loaded
 document.addEventListener('DOMContentLoaded', initApp);

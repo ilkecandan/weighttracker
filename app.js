@@ -10,9 +10,13 @@ const elements = {
   timeRange: document.getElementById('timeRange'),
   exportBtn: document.getElementById('exportBtn'),
   themeBtn: document.getElementById('themeBtn'),
+  themeNavBtn: document.getElementById('themeNavBtn'),
   targetWeightInput: document.getElementById('targetWeight'),
   setGoalBtn: document.getElementById('setGoalBtn'),
+  noGoalBtn: document.getElementById('noGoalBtn'),
   goalProgress: document.getElementById('goalProgress'),
+  currentGoalDisplay: document.getElementById('currentGoalDisplay'),
+  editGoalBtn: document.getElementById('editGoalBtn'),
   currentWeightEl: document.getElementById('currentWeight'),
   weeklyChangeEl: document.getElementById('weeklyChange'),
   monthlyChangeEl: document.getElementById('monthlyChange'),
@@ -20,22 +24,25 @@ const elements = {
   entriesTable: document.getElementById('entriesTable').querySelector('tbody'),
   searchEntry: document.getElementById('searchEntry'),
   editModal: document.getElementById('editModal'),
+  goalModal: document.getElementById('goalModal'),
   closeModal: document.querySelector('.close-modal'),
+  closeGoalModal: document.getElementById('closeGoalModal'),
   editDate: document.getElementById('editDate'),
   editWeight: document.getElementById('editWeight'),
   saveEditBtn: document.getElementById('saveEditBtn'),
   deleteEntryBtn: document.getElementById('deleteEntryBtn'),
-  currentGoalDisplay: document.getElementById('currentGoalDisplay'),
   fabBtn: document.getElementById('fabBtn'),
+  quickAddCard: document.getElementById('quickAddCard'),
+  quickAddWeight: document.getElementById('quickAddWeight'),
+  quickAddSubmit: document.getElementById('quickAddSubmit'),
+  closeQuickAdd: document.getElementById('closeQuickAdd'),
   onboardingModal: document.getElementById('onboardingModal'),
   onboardingNext: document.getElementById('onboardingNext'),
   onboardingPrev: document.getElementById('onboardingPrev'),
   onboardingClose: document.getElementById('onboardingClose'),
   onboardingSteps: document.querySelectorAll('.onboarding-step'),
   bottomNav: document.getElementById('bottomNav'),
-  quickAddCard: document.getElementById('quickAddCard'),
-  quickAddWeight: document.getElementById('quickAddWeight'),
-  quickAddSubmit: document.getElementById('quickAddSubmit')
+  navItems: document.querySelectorAll('.nav-item')
 };
 
 // Chart setup
@@ -103,6 +110,7 @@ function applyTheme(isDark) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem('theme', theme);
   elements.themeBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i> Light Mode' : '<i class="fas fa-moon"></i> Dark Mode';
+  elements.themeNavBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i><span>Light</span>' : '<i class="fas fa-moon"></i><span>Dark</span>';
   
   // Update chart theme if it exists
   if (weightChart) {
@@ -145,6 +153,44 @@ function showOnboardingStep(step) {
   
   elements.onboardingPrev.style.display = step === 0 ? 'none' : 'block';
   elements.onboardingNext.style.display = step === elements.onboardingSteps.length - 1 ? 'none' : 'block';
+}
+
+// Format date for display
+function formatDate(dateString, short = false, excelFormat = false) {
+  const date = new Date(dateString);
+  
+  if (excelFormat) {
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+  
+  if (short) {
+    return date.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric'
+    });
+  }
+  
+  return date.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  });
+}
+
+// Show toast notification
+function showToast(message) {
+  const toast = elements.toast;
+  toast.textContent = message;
+  toast.style.display = 'block';
+  
+  setTimeout(() => {
+    toast.style.display = 'none';
+  }, 3000);
 }
 
 // Save weight entry
@@ -220,6 +266,19 @@ function setWeightGoal() {
   updateGoalProgress();
   renderChart();
   updateCurrentGoalDisplay();
+  elements.goalModal.style.display = 'none';
+}
+
+// Remove weight goal
+function removeWeightGoal() {
+  goalData.target = null;
+  localStorage.setItem('weightGoal', JSON.stringify(goalData));
+  showToast("🎯 Goal weight removed");
+  
+  updateGoalProgress();
+  renderChart();
+  updateCurrentGoalDisplay();
+  elements.goalModal.style.display = 'none';
 }
 
 // Update current goal display
@@ -229,6 +288,57 @@ function updateCurrentGoalDisplay() {
   } else {
     elements.currentGoalDisplay.textContent = "Not Set";
   }
+}
+
+// Update goal progress
+function updateGoalProgress() {
+  if (!goalData.target) {
+    elements.goalProgress.style.width = '0%';
+    return;
+  }
+
+  const dates = Object.keys(weightData).sort();
+  if (dates.length === 0) {
+    elements.goalProgress.style.width = '0%';
+    return;
+  }
+
+  const latestWeight = weightData[dates[dates.length - 1]];
+  const progress = ((latestWeight - goalData.target) / (weightData[dates[0]] - goalData.target)) * 100;
+  const progressPercent = Math.min(100, Math.max(0, 100 - progress));
+
+  elements.goalProgress.style.width = `${progressPercent}%`;
+}
+
+// Get filtered data based on time range
+function getFilteredData(range) {
+  const now = new Date();
+  const dates = Object.keys(weightData).sort();
+  
+  if (dates.length === 0) return [];
+  
+  if (range === 'all') return dates;
+  
+  const cutoffDate = new Date();
+  
+  switch (range) {
+    case 'week':
+      cutoffDate.setDate(now.getDate() - 7);
+      break;
+    case 'month':
+      cutoffDate.setMonth(now.getMonth() - 1);
+      break;
+    case '3months':
+      cutoffDate.setMonth(now.getMonth() - 3);
+      break;
+    case 'year':
+      cutoffDate.setFullYear(now.getFullYear() - 1);
+      break;
+    default:
+      return dates;
+  }
+  
+  return dates.filter(date => new Date(date) >= cutoffDate);
 }
 
 // Enhanced Excel export
@@ -257,6 +367,13 @@ function exportData() {
   // Add goal if exists
   if (goalData.target) {
     csvContent += `Goal Weight,${goalData.target} kg\n`;
+    
+    // Calculate progress
+    const latestWeight = weightData[dates[dates.length - 1]];
+    const progress = ((latestWeight - goalData.target) / (weightData[dates[0]] - goalData.target)) * 100;
+    const progressPercent = Math.min(100, Math.max(0, 100 - progress));
+    
+    csvContent += `Progress Toward Goal,${progressPercent.toFixed(1)}%\n`;
   }
 
   // Create download link
@@ -411,9 +528,178 @@ function renderChart() {
   });
 }
 
+// Render entries table
+function renderEntriesTable(searchTerm = '') {
+  const tableBody = elements.entriesTable;
+  tableBody.innerHTML = '';
+
+  let dates = Object.keys(weightData).sort().reverse();
+  
+  if (searchTerm) {
+    const searchLower = searchTerm.toLowerCase();
+    dates = dates.filter(date => {
+      const formattedDate = formatDate(date).toLowerCase();
+      const weight = weightData[date].toString().toLowerCase();
+      return formattedDate.includes(searchLower) || weight.includes(searchLower);
+    });
+  }
+
+  if (dates.length === 0) {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td colspan="3" class="no-entries">No entries found</td>`;
+    tableBody.appendChild(row);
+    return;
+  }
+
+  dates.forEach(date => {
+    const row = document.createElement('tr');
+    row.dataset.date = date;
+    
+    row.innerHTML = `
+      <td>${formatDate(date)}</td>
+      <td>${weightData[date]} kg</td>
+      <td class="actions">
+        <button class="btn btn-small edit-btn" data-date="${date}">
+          <i class="fas fa-edit"></i>
+        </button>
+      </td>
+    `;
+    
+    tableBody.appendChild(row);
+  });
+
+  // Add event listeners to edit buttons
+  document.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => editEntry(btn.dataset.date));
+  });
+}
+
+// Edit entry
+function editEntry(date) {
+  currentlyEditingId = date;
+  elements.editDate.value = date;
+  elements.editWeight.value = weightData[date];
+  elements.editModal.style.display = 'flex';
+}
+
+// Save edited entry
+function saveEditedEntry() {
+  if (!currentlyEditingId) return;
+
+  const newDate = elements.editDate.value;
+  const newWeight = parseFloat(elements.editWeight.value);
+
+  if (!newDate || isNaN(newWeight)) {
+    showToast("⚠️ Please enter valid data");
+    return;
+  }
+
+  // If date changed, we need to delete old entry and create new one
+  if (currentlyEditingId !== newDate) {
+    delete weightData[currentlyEditingId];
+  }
+
+  weightData[newDate] = newWeight;
+  localStorage.setItem('weights', encryptData(weightData));
+
+  showToast(`✅ Updated entry for ${formatDate(newDate)}: ${newWeight} kg`);
+  elements.editModal.style.display = 'none';
+  
+  renderChart();
+  renderEntriesTable();
+  updateStats();
+  updateGoalProgress();
+}
+
+// Delete entry
+function deleteEntry(date) {
+  if (!confirm(`Delete entry for ${formatDate(date)}?`)) return;
+
+  delete weightData[date];
+  localStorage.setItem('weights', encryptData(weightData));
+
+  showToast(`🗑️ Deleted entry for ${formatDate(date)}`);
+  
+  renderChart();
+  renderEntriesTable();
+  updateStats();
+  updateGoalProgress();
+}
+
+// Update stats
+function updateStats() {
+  const dates = Object.keys(weightData).sort();
+  if (dates.length === 0) {
+    elements.currentWeightEl.textContent = '-- kg';
+    elements.weeklyChangeEl.textContent = '-- kg';
+    elements.monthlyChangeEl.textContent = '-- kg';
+    elements.streakCountEl.textContent = '0 days';
+    return;
+  }
+
+  // Current weight
+  const latestWeight = weightData[dates[dates.length - 1]];
+  elements.currentWeightEl.textContent = `${latestWeight} kg`;
+
+  // Weekly change
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const weeklyEntries = dates.filter(date => new Date(date) >= oneWeekAgo);
+  
+  if (weeklyEntries.length >= 2) {
+    const change = latestWeight - weightData[weeklyEntries[0]];
+    elements.weeklyChangeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(1)} kg`;
+    elements.weeklyChangeEl.style.color = change < 0 ? 'var(--success-color)' : change > 0 ? 'var(--danger-color)' : 'inherit';
+  } else {
+    elements.weeklyChangeEl.textContent = '-- kg';
+  }
+
+  // Monthly change
+  const oneMonthAgo = new Date();
+  oneMonthAgo.setMonth(oneMonthAgo.getMonth() - 1);
+  const monthlyEntries = dates.filter(date => new Date(date) >= oneMonthAgo);
+  
+  if (monthlyEntries.length >= 2) {
+    const change = latestWeight - weightData[monthlyEntries[0]];
+    elements.monthlyChangeEl.textContent = `${change >= 0 ? '+' : ''}${change.toFixed(1)} kg`;
+    elements.monthlyChangeEl.style.color = change < 0 ? 'var(--success-color)' : change > 0 ? 'var(--danger-color)' : 'inherit';
+  } else {
+    elements.monthlyChangeEl.textContent = '-- kg';
+  }
+
+  // Streak calculation
+  let streak = 0;
+  const today = new Date().toISOString().split('T')[0];
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  if (weightData[today]) {
+    streak = 1;
+    let checkDate = new Date(yesterday);
+    
+    while (weightData[checkDate.toISOString().split('T')[0]]) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+  } else if (weightData[yesterdayStr]) {
+    streak = 1;
+    let checkDate = new Date(yesterday);
+    checkDate.setDate(checkDate.getDate() - 1);
+    
+    while (weightData[checkDate.toISOString().split('T')[0]]) {
+      streak++;
+      checkDate.setDate(checkDate.getDate() - 1);
+    }
+  }
+
+  elements.streakCountEl.textContent = `${streak} day${streak !== 1 ? 's' : ''}`;
+}
+
 // Initialize the app
 function initApp() {
   checkFirstVisit();
+  checkInstalled();
   renderChart();
   renderEntriesTable();
   updateStats();
@@ -424,12 +710,20 @@ function initApp() {
     elements.targetWeightInput.value = goalData.target;
   }
   
+  // Set today's date by default
+  elements.dateInput.valueAsDate = new Date();
   elements.weightInput.focus();
 }
 
 // Event listeners
 elements.saveBtn.addEventListener('click', saveWeight);
 elements.setGoalBtn.addEventListener('click', setWeightGoal);
+elements.noGoalBtn.addEventListener('click', removeWeightGoal);
+elements.editGoalBtn.addEventListener('click', () => {
+  elements.targetWeightInput.value = goalData.target || '';
+  elements.goalModal.style.display = 'flex';
+});
+elements.closeGoalModal.addEventListener('click', () => elements.goalModal.style.display = 'none');
 elements.exportBtn.addEventListener('click', exportData);
 elements.timeRange.addEventListener('change', renderChart);
 elements.searchEntry.addEventListener('input', (e) => renderEntriesTable(e.target.value));
@@ -444,25 +738,78 @@ elements.deleteEntryBtn.addEventListener('click', () => {
 elements.fabBtn.addEventListener('click', () => {
   elements.quickAddCard.classList.toggle('active');
 });
+elements.closeQuickAdd.addEventListener('click', () => {
+  elements.quickAddCard.classList.remove('active');
+});
 elements.quickAddSubmit.addEventListener('click', quickAddWeight);
 elements.onboardingNext.addEventListener('click', () => showOnboardingStep(currentOnboardingStep + 1));
 elements.onboardingPrev.addEventListener('click', () => showOnboardingStep(currentOnboardingStep - 1));
 elements.onboardingClose.addEventListener('click', () => elements.onboardingModal.style.display = 'none');
+elements.themeBtn.addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  applyTheme(!isDark);
+});
+elements.themeNavBtn.addEventListener('click', () => {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  applyTheme(!isDark);
+});
 
 // Bottom nav navigation
-document.querySelectorAll('.nav-item').forEach(item => {
+elements.navItems.forEach(item => {
   item.addEventListener('click', function() {
     const target = this.getAttribute('data-target');
     document.querySelectorAll('.main-section').forEach(section => {
-      section.style.display = section.id === target ? 'block' : 'none';
+      section.style.display = 'none';
     });
     
+    if (target) {
+      document.getElementById(target).style.display = 'block';
+    }
+    
     // Update active state
-    document.querySelectorAll('.nav-item').forEach(navItem => {
+    elements.navItems.forEach(navItem => {
       navItem.classList.toggle('active', navItem === this);
     });
+    
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   });
 });
 
+// PWA installation
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  elements.installBanner.style.display = 'flex';
+});
+
+elements.installBannerBtn.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      elements.installBanner.style.display = 'none';
+    }
+    deferredPrompt = null;
+  }
+});
+
+elements.dismissBanner.addEventListener('click', () => {
+  elements.installBanner.style.display = 'none';
+});
+
+// Close modals when clicking outside
+window.addEventListener('click', (e) => {
+  if (e.target === elements.editModal) {
+    elements.editModal.style.display = 'none';
+  }
+  if (e.target === elements.goalModal) {
+    elements.goalModal.style.display = 'none';
+  }
+  if (e.target === elements.onboardingModal) {
+    elements.onboardingModal.style.display = 'none';
+  }
+});
+
 // Start the app
-initApp();
+document.addEventListener('DOMContentLoaded', initApp);

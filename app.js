@@ -25,18 +25,19 @@ const elements = {
   cancelEditBtn: document.getElementById('cancelEditBtn'),
   exportBtn: document.getElementById('exportBtn'),
   timeRange: document.getElementById('timeRange'),
-  themeBtn: document.getElementById('themeBtn'),
   toast: document.getElementById('toast'),
-  fabBtn: document.getElementById('fabBtn'),
-  quickAddCard: document.getElementById('quickAddCard'),
-  quickAddWeight: document.getElementById('quickAddWeight'),
-  quickAddSubmit: document.getElementById('quickAddSubmit'),
   onboardingModal: document.getElementById('onboardingModal'),
   onboardingNext: document.getElementById('onboardingNext'),
   onboardingPrev: document.getElementById('onboardingPrev'),
   onboardingClose: document.getElementById('onboardingClose'),
   onboardingSteps: document.querySelectorAll('.onboarding-step'),
-  onboardingDots: document.querySelectorAll('.dot')
+  onboardingDots: document.querySelectorAll('.dot'),
+  navHome: document.getElementById('navHome'),
+  navChart: document.getElementById('navChart'),
+  navAdd: document.getElementById('navAdd'),
+  navSettings: document.getElementById('navSettings'),
+  goalTooltip: document.getElementById('goalTooltip'),
+  addTooltip: document.getElementById('addTooltip')
 };
 
 // Chart setup
@@ -58,7 +59,27 @@ function checkFirstVisit() {
   if (!hasVisited) {
     showOnboarding();
     localStorage.setItem('hasVisited', 'true');
+    
+    // Show tooltips after onboarding
+    setTimeout(() => {
+      showTooltip(elements.goalTooltip, elements.setGoalBtn, 'Click to set your weight goal');
+      setTimeout(() => {
+        showTooltip(elements.addTooltip, elements.navAdd, 'Tap here to add new entries');
+      }, 2000);
+    }, 500);
   }
+}
+
+function showTooltip(tooltip, element, message) {
+  tooltip.textContent = message;
+  const rect = element.getBoundingClientRect();
+  tooltip.style.top = `${rect.top - 40}px`;
+  tooltip.style.left = `${rect.left + (rect.width / 2) - (tooltip.offsetWidth / 2)}px`;
+  tooltip.style.opacity = '1';
+  
+  setTimeout(() => {
+    tooltip.style.opacity = '0';
+  }, 3000);
 }
 
 // Onboarding flow
@@ -81,29 +102,6 @@ function showOnboardingStep(step) {
   elements.onboardingPrev.style.display = step === 0 ? 'none' : 'block';
   elements.onboardingNext.style.display = step === elements.onboardingSteps.length - 1 ? 'none' : 'block';
   elements.onboardingClose.style.display = step === elements.onboardingSteps.length - 1 ? 'block' : 'none';
-}
-
-// Theme management
-function applyTheme(isDark) {
-  const theme = isDark ? 'dark' : 'light';
-  document.documentElement.setAttribute('data-theme', theme);
-  localStorage.setItem('theme', theme);
-  elements.themeBtn.innerHTML = isDark ? '<i class="fas fa-sun"></i>' : '<i class="fas fa-moon"></i>';
-  
-  if (weightChart) {
-    weightChart.options.scales.x.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-    weightChart.options.scales.y.grid.color = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
-    weightChart.update();
-  }
-}
-
-// Check for saved theme preference
-const savedTheme = localStorage.getItem('theme');
-if (savedTheme) {
-  applyTheme(savedTheme === 'dark');
-} else {
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  applyTheme(prefersDark);
 }
 
 // Show toast notification
@@ -135,7 +133,7 @@ function saveWeight() {
   const weight = parseFloat(elements.weightInput.value);
 
   if (!date || isNaN(weight)) {
-    showToast("⚠️ Please enter a valid date and weight");
+    showToast("⚠️ Please enter valid date and weight");
     return;
   }
 
@@ -149,7 +147,7 @@ function saveWeight() {
   localStorage.setItem('weights', JSON.stringify(weightData));
   
   elements.weightInput.value = '';
-  showToast(`✅ Saved entry for ${formatDate(date)}: ${weight} kg`);
+  showToast(`✅ Saved ${weight} kg for ${formatDate(date)}`);
   
   renderChart();
   renderEntriesTable();
@@ -158,35 +156,12 @@ function saveWeight() {
   elements.weightInput.focus();
 }
 
-// Quick add weight
-function quickAddWeight() {
-  const weight = parseFloat(elements.quickAddWeight.value);
-  const date = new Date().toISOString().split('T')[0];
-
-  if (isNaN(weight)) {
-    showToast("⚠️ Please enter a valid weight");
-    return;
-  }
-
-  weightData[date] = weight;
-  localStorage.setItem('weights', JSON.stringify(weightData));
-  
-  elements.quickAddWeight.value = '';
-  showToast(`✅ Quick-added today's weight: ${weight} kg`);
-  
-  renderChart();
-  renderEntriesTable();
-  updateStats();
-  updateGoalProgress();
-  elements.quickAddCard.classList.remove('active');
-}
-
 // Set weight goal
 function setWeightGoal() {
   const target = parseFloat(elements.targetWeightInput.value);
   
   if (isNaN(target)) {
-    showToast("⚠️ Please enter a valid target weight");
+    showToast("⚠️ Please enter valid target weight");
     return;
   }
   
@@ -399,7 +374,7 @@ function saveEditedEntry() {
   weightData[newDate] = newWeight;
   localStorage.setItem('weights', JSON.stringify(weightData));
   
-  showToast("✅ Entry updated successfully");
+  showToast("✅ Entry updated");
   elements.editModal.style.display = 'none';
   
   renderChart();
@@ -409,9 +384,9 @@ function saveEditedEntry() {
 }
 
 // Delete entry
-function deleteEntry(date) {
-  if (confirm(`Are you sure you want to delete the entry for ${formatDate(date)}?`)) {
-    delete weightData[date];
+function deleteEntry() {
+  if (confirm(`Delete entry for ${formatDate(currentlyEditingId)}?`)) {
+    delete weightData[currentlyEditingId];
     localStorage.setItem('weights', JSON.stringify(weightData));
     showToast("🗑️ Entry deleted");
     
@@ -419,6 +394,7 @@ function deleteEntry(date) {
     renderEntriesTable();
     updateStats();
     updateGoalProgress();
+    elements.editModal.style.display = 'none';
   }
 }
 
@@ -523,7 +499,32 @@ function exportData() {
   link.click();
   document.body.removeChild(link);
 
-  showToast("📊 Data exported to Excel");
+  showToast("📊 Data exported");
+}
+
+// Navigate to different sections
+function navigateTo(section) {
+  // Reset all nav buttons
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  // Activate current nav button
+  elements[`nav${section}`].classList.add('active');
+  
+  // Scroll to section (implementation depends on your layout)
+  // This is a simplified version - adjust as needed
+  if (section === 'Home') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (section === 'Chart') {
+    document.querySelector('.chart-section').scrollIntoView({ behavior: 'smooth' });
+  } else if (section === 'Add') {
+    document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth' });
+    elements.weightInput.focus();
+  } else if (section === 'Settings') {
+    // Future implementation for settings
+    showToast("⚙️ Settings coming soon");
+  }
 }
 
 // Initialize the app
@@ -538,7 +539,8 @@ function initApp() {
     elements.targetWeightInput.value = goalData.target;
   }
   
-  elements.weightInput.focus();
+  // Set today's date by default
+  elements.dateInput.valueAsDate = new Date();
 }
 
 // Event listeners
@@ -551,26 +553,16 @@ elements.searchEntry.addEventListener('input', (e) => renderEntriesTable(e.targe
 elements.closeModal.addEventListener('click', () => elements.editModal.style.display = 'none');
 elements.cancelEditBtn.addEventListener('click', () => elements.editModal.style.display = 'none');
 elements.saveEditBtn.addEventListener('click', saveEditedEntry);
-elements.deleteEntryBtn.addEventListener('click', () => {
-  if (currentlyEditingId) {
-    deleteEntry(currentlyEditingId);
-    elements.editModal.style.display = 'none';
-  }
-});
-elements.themeBtn.addEventListener('click', () => {
-  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-  applyTheme(!isDark);
-});
-elements.fabBtn.addEventListener('click', () => {
-  elements.quickAddCard.classList.toggle('active');
-  if (elements.quickAddCard.classList.contains('active')) {
-    elements.quickAddWeight.focus();
-  }
-});
-elements.quickAddSubmit.addEventListener('click', quickAddWeight);
+elements.deleteEntryBtn.addEventListener('click', deleteEntry);
 elements.onboardingNext.addEventListener('click', () => showOnboardingStep(currentOnboardingStep + 1));
 elements.onboardingPrev.addEventListener('click', () => showOnboardingStep(currentOnboardingStep - 1));
 elements.onboardingClose.addEventListener('click', () => elements.onboardingModal.style.display = 'none');
+
+// Navigation event listeners
+elements.navHome.addEventListener('click', () => navigateTo('Home'));
+elements.navChart.addEventListener('click', () => navigateTo('Chart'));
+elements.navAdd.addEventListener('click', () => navigateTo('Add'));
+elements.navSettings.addEventListener('click', () => navigateTo('Settings'));
 
 // Close modals when clicking outside
 window.addEventListener('click', (e) => {
@@ -580,10 +572,7 @@ window.addEventListener('click', (e) => {
   if (e.target === elements.onboardingModal) {
     elements.onboardingModal.style.display = 'none';
   }
-  if (!elements.quickAddCard.contains(e.target) && e.target !== elements.fabBtn) {
-    elements.quickAddCard.classList.remove('active');
-  }
 });
 
-// Initialize the app
-initApp();
+// Initialize the app when DOM is loaded
+document.addEventListener('DOMContentLoaded', initApp);

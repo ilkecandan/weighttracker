@@ -2,43 +2,82 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <meta name="description" content="Track your weight and health goals with this intuitive mobile app"/>
-  <title>Weight Tracker | Health & Fitness</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="description" content="Plan your content strategy with Tempest Labs' elegant scrapbook-style calendar"/>
+  <title>Tempest Content Planner | Creative Content Calendar</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="stylesheet" href="style.css"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
 </head>
 <body>
   <div class="app-container">
-    <!-- Goal Weight Banner (Pinned to top) -->
-    <div class="goal-banner" id="goalBanner">
-      <div class="goal-info">
-        <span>Goal Weight:</span>
-        <strong id="currentGoalDisplay">Not Set</strong>
+    <!-- Goal Weight Section (Pinned at top) -->
+    <section class="goal-section pinned-goal">
+      <div class="goal-header">
+        <h2>Goal Weight</h2>
+        <div class="goal-controls">
+          <input type="number" id="targetWeight" placeholder="Enter goal weight" step="0.1">
+          <button class="btn btn-primary" id="setGoalBtn">Set Goal</button>
+          <button class="btn btn-secondary" id="removeGoalBtn">No Goal</button>
+        </div>
       </div>
-      <button class="btn btn-small" id="setGoalBtn">Set Goal</button>
-      <button class="btn btn-small btn-secondary" id="removeGoalBtn">Remove</button>
-    </div>
+      <div class="goal-progress" id="goalProgress">
+        <div class="progress-text">
+          <span id="currentWeightDisplay">--</span>
+          <span id="goalText">No goal set</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
+        </div>
+      </div>
+    </section>
 
-    <!-- Main App Content -->
-    <main>
-      <!-- Header Section -->
-      <div class="header-section">
-        <div class="header-content">
-          <h1>Weight Tracker</h1>
-          <p class="privacy-notice">Your data stays private - stored only on your device</p>
+    <!-- Main App Section -->
+    <section class="app-section" id="appSection">
+      <header>
+        <div class="logo">
+          <i class="fas fa-calendar-alt"></i>
+          <h1>Tempest <span> Content Planner</span></h1>
         </div>
         <button class="theme-toggle" id="themeBtn">
           <i class="fas fa-moon"></i>
         </button>
+      </header>
+
+      <div class="date-controls">
+        <button class="btn btn-secondary" id="prevWeekBtn">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+        <button class="btn btn-today" id="todayBtn">Today</button>
+        <button class="btn btn-secondary" id="nextWeekBtn">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+        <div class="week-display" id="weekDisplay"></div>
       </div>
 
-      <!-- Input Section -->
-      <section class="input-section">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Current Weight</h3>
+          <p id="currentWeight">--</p>
+        </div>
+        <div class="stat-card">
+          <h3>Weekly Change</h3>
+          <p id="weeklyChange">--</p>
+        </div>
+        <div class="stat-card">
+          <h3>Monthly Change</h3>
+          <p id="monthlyChange">--</p>
+        </div>
+        <div class="stat-card">
+          <h3>Streak</h3>
+          <p id="streakCount">--</p>
+        </div>
+      </div>
+
+      <div class="input-section">
         <div class="form-group">
           <label for="date">Date</label>
           <input type="date" id="date" required>
@@ -47,64 +86,32 @@
           <label for="weight">Weight (kg)</label>
           <input type="number" id="weight" step="0.1" placeholder="Enter your weight" required>
         </div>
-        <button class="btn btn-primary" id="saveBtn">
-          <i class="fas fa-save"></i> Save Entry
-        </button>
-      </section>
+        <button class="btn btn-primary" id="saveBtn">Save Entry</button>
+      </div>
 
-      <!-- Stats Section -->
-      <section class="stats-section">
-        <h2>Your Progress</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h3>Current Weight</h3>
-            <p id="currentWeight">-</p>
-          </div>
-          <div class="stat-card">
-            <h3>Weekly Change</h3>
-            <p id="weeklyChange">-</p>
-          </div>
-          <div class="stat-card">
-            <h3>Monthly Change</h3>
-            <p id="monthlyChange">-</p>
-          </div>
-          <div class="stat-card">
-            <h3>Current Streak</h3>
-            <p id="streakCount">0 days</p>
-          </div>
+      <div class="chart-section">
+        <div class="chart-container">
+          <canvas id="weightChart"></canvas>
         </div>
-      </section>
-
-      <!-- Chart Section -->
-      <section class="chart-section">
-        <h2>Weight History</h2>
-        <div class="chart-controls">
+        <div class="time-range">
           <select id="timeRange">
             <option value="week">Last 7 Days</option>
             <option value="month">Last 30 Days</option>
             <option value="3months">Last 3 Months</option>
-            <option value="year">Last Year</option>
             <option value="all" selected>All Time</option>
           </select>
-          <button class="btn btn-small btn-secondary" id="exportBtn">
-            <i class="fas fa-file-export"></i> Export
+        </div>
+      </div>
+
+      <div class="entries-section">
+        <div class="entries-header">
+          <h2>Your Entries</h2>
+          <button class="btn btn-export" id="exportBtn">
+            <i class="fas fa-file-excel"></i> Export Excel
           </button>
         </div>
-        <div class="chart-container">
-          <canvas id="weightChart"></canvas>
-          <div id="noDataMessage" class="empty-state">
-            <i class="fas fa-weight"></i>
-            <p>No weight data yet</p>
-            <button class="btn btn-small" id="addSampleDataBtn">Add Sample Data</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Entries Section -->
-      <section class="entries-section">
-        <h2>Your Entries</h2>
-        <div class="entries-controls">
-          <input type="search" id="searchEntry" placeholder="Search entries...">
+        <div class="search-box">
+          <input type="text" id="searchEntry" placeholder="Search entries...">
         </div>
         <div class="entries-table-container">
           <table id="entriesTable">
@@ -118,116 +125,87 @@
             <tbody></tbody>
           </table>
         </div>
-      </section>
-    </main>
-
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav" id="bottomNav">
-      <button class="nav-item active" data-target="inputSection">
-        <i class="fas fa-plus"></i>
-        <span>Add</span>
-      </button>
-      <button class="nav-item" data-target="statsSection">
-        <i class="fas fa-chart-line"></i>
-        <span>Stats</span>
-      </button>
-      <button class="nav-item" data-target="chartSection">
-        <i class="fas fa-chart-area"></i>
-        <span>Chart</span>
-      </button>
-      <button class="nav-item" data-target="entriesSection">
-        <i class="fas fa-list"></i>
-        <span>Entries</span>
-      </button>
-    </nav>
-
-    <!-- Quick Add FAB -->
-    <button class="fab-btn" id="fabBtn">
-      <i class="fas fa-plus"></i>
-    </button>
-    <div class="quick-add-card" id="quickAddCard">
-      <div class="quick-add-header">
-        <h3>Quick Add Today's Weight</h3>
-        <button class="btn-close" id="closeQuickAdd">&times;</button>
       </div>
-      <input type="number" id="quickAddWeight" step="0.1" placeholder="Enter today's weight">
-      <button class="btn btn-primary" id="quickAddSubmit">Save</button>
-    </div>
-
-    <!-- Footer Section -->
-    <footer class="footer-section">
-      <p>Weight Tracker App v1.0</p>
-      <div class="footer-links">
-        <a href="#" id="showHelp"><i class="fas fa-question-circle"></i> Help</a>
-        <a href="#" id="privacyLink"><i class="fas fa-shield-alt"></i> Privacy</a>
-      </div>
-    </footer>
+      
+      <footer class="app-footer">
+        <div class="footer-links">
+          <a href="https://buymeacoffee.com/ilkecandan" target="_blank" class="footer-link">
+            <i class="fas fa-coffee"></i> Support Me
+          </a>
+          <a href="https://www.linkedin.com/in/ilkecandan/" target="_blank" class="footer-link">
+            <i class="fab fa-linkedin"></i> Let's Meet on LinkedIn
+          </a>
+        </div>
+      </footer>
+    </section>
   </div>
 
-  <!-- Edit Entry Modal -->
+  <!-- Edit Modal -->
   <div class="modal" id="editModal">
     <div class="modal-content">
       <div class="modal-header">
         <h3>Edit Entry</h3>
         <button class="close-modal" id="closeModal">&times;</button>
       </div>
-      <div class="modal-body">
+      <form id="editForm">
         <div class="form-group">
           <label>Date</label>
-          <input type="date" id="editDate">
+          <input type="date" id="editDate" required>
         </div>
         <div class="form-group">
           <label>Weight (kg)</label>
-          <input type="number" step="0.1" id="editWeight">
+          <input type="number" id="editWeight" step="0.1" required>
         </div>
-      </div>
-      <div class="modal-actions">
-        <button class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
-        <button class="btn btn-danger" id="deleteEntryBtn">Delete</button>
-        <button class="btn btn-primary" id="saveEditBtn">Save Changes</button>
-      </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-danger" id="deleteEntryBtn">Delete</button>
+          <button type="button" class="btn btn-secondary" id="cancelEditBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveEditBtn">Save Changes</button>
+        </div>
+      </form>
     </div>
   </div>
 
   <!-- Onboarding Modal -->
   <div class="modal onboarding-modal" id="onboardingModal">
-    <div class="onboarding-content">
-      <!-- Step 1 -->
-      <div class="onboarding-step active">
-        <div class="onboarding-icon">
+    <div class="modal-content">
+      <div class="onboarding-step" data-step="1">
+        <h3>Welcome to Weight Tracker!</h3>
+        <p>Track your weight journey with our simple and intuitive app.</p>
+        <div class="onboarding-image">
           <i class="fas fa-weight"></i>
         </div>
-        <h3>Welcome to Weight Tracker</h3>
-        <p>Track your weight journey with this simple, private app that stores all data only on your device.</p>
-        <div class="onboarding-actions">
-          <button class="btn btn-primary" id="onboardingNext">Next</button>
-        </div>
       </div>
-      
-      <!-- Step 2 -->
-      <div class="onboarding-step">
-        <div class="onboarding-icon">
+      <div class="onboarding-step" data-step="2">
+        <h3>Set Your Goal</h3>
+        <p>Set a target weight to track your progress towards your goal.</p>
+        <div class="onboarding-image">
           <i class="fas fa-bullseye"></i>
         </div>
-        <h3>Set Your Goal</h3>
-        <p>Set a target weight at the top of the screen to track your progress toward your goal.</p>
-        <div class="onboarding-actions">
-          <button class="btn btn-secondary" id="onboardingPrev">Back</button>
-          <button class="btn btn-primary" id="onboardingNext2">Next</button>
-        </div>
       </div>
-      
-      <!-- Step 3 -->
-      <div class="onboarding-step">
-        <div class="onboarding-icon">
+      <div class="onboarding-step" data-step="3">
+        <h3>Track Daily</h3>
+        <p>Add your daily weight to see trends and progress over time.</p>
+        <div class="onboarding-image">
           <i class="fas fa-chart-line"></i>
         </div>
-        <h3>Track Your Progress</h3>
-        <p>View your weight history in the chart and see trends over time.</p>
-        <div class="onboarding-actions">
-          <button class="btn btn-secondary" id="onboardingPrev2">Back</button>
-          <button class="btn btn-primary" id="onboardingClose">Get Started</button>
+      </div>
+      <div class="onboarding-step" data-step="4">
+        <h3>Export Data</h3>
+        <p>Export your data to Excel for further analysis.</p>
+        <div class="onboarding-image">
+          <i class="fas fa-file-excel"></i>
         </div>
+      </div>
+      <div class="onboarding-nav">
+        <button class="btn btn-secondary" id="onboardingPrev">Previous</button>
+        <button class="btn btn-primary" id="onboardingNext">Next</button>
+        <button class="btn btn-primary" id="onboardingClose">Get Started</button>
+      </div>
+      <div class="onboarding-dots">
+        <span class="dot active" data-step="1"></span>
+        <span class="dot" data-step="2"></span>
+        <span class="dot" data-step="3"></span>
+        <span class="dot" data-step="4"></span>
       </div>
     </div>
   </div>
@@ -235,13 +213,16 @@
   <!-- Toast Notification -->
   <div class="toast" id="toast"></div>
 
-  <!-- Install Banner -->
-  <div class="install-banner" id="installBanner">
-    <p>Install this app for a better experience</p>
-    <div>
-      <button class="btn btn-small" id="installBannerBtn">Install</button>
-      <button class="btn btn-small btn-secondary" id="dismissBanner">Later</button>
-    </div>
+  <!-- Floating Action Button -->
+  <button class="fab" id="fabBtn">
+    <i class="fas fa-plus"></i>
+  </button>
+
+  <!-- Quick Add Card -->
+  <div class="quick-add-card" id="quickAddCard">
+    <h3>Quick Add Today's Weight</h3>
+    <input type="number" id="quickAddWeight" step="0.1" placeholder="Enter weight">
+    <button class="btn btn-primary" id="quickAddSubmit">Save</button>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

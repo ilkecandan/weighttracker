@@ -115,27 +115,65 @@
         radial-gradient(circle at 40% 60%, rgba(138, 124, 176, 0.08) 0%, transparent 30%);
     }
 
+    /* App Header */
+    .app-header {
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-secondary);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(138, 180, 193, 0.3);
+      position: sticky;
+      top: 0;
+      z-index: 99;
+    }
+
+    .app-title {
+      font-size: 1.5rem;
+      color: var(--lily-pad);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .app-title i {
+      font-size: 1.75rem;
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 1.25rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      border-radius: 50%;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      color: var(--lily-pad);
+      background: rgba(138, 180, 193, 0.2);
+    }
+
     /* Pinned Goal Section - Only shows when goal is set */
     .pinned-goal {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
       background: var(--bg-secondary);
-      padding: 1rem 1.5rem;
-      z-index: 100;
+      padding: 1.25rem 1.5rem;
+      margin: 1rem 1.5rem;
+      border-radius: var(--border-radius);
       box-shadow: var(--shadow);
-      border-bottom: 1px solid rgba(138, 180, 193, 0.3);
-      backdrop-filter: blur(10px);
-      transform: translateY(-100%);
-      opacity: 0;
+      border: 1px solid rgba(138, 180, 193, 0.3);
+      backdrop-filter: blur(5px);
+      transform: translateY(0);
+      opacity: 1;
       transition: all 0.5s ease;
       height: auto;
     }
 
-    .pinned-goal.visible {
-      transform: translateY(0);
-      opacity: 1;
+    .pinned-goal.hidden {
+      display: none;
     }
 
     .goal-header {
@@ -235,45 +273,20 @@
       100% { transform: translateX(100%); }
     }
 
-    /* Set Goal Button (shown when no goal is set) */
-    .set-goal-btn {
-      position: fixed;
-      bottom: calc(var(--bottom-nav-height) + 20px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--lily-pad);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius-lg);
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      font-weight: 500;
+    /* Set Goal Button - Visible when no goal is set */
+    .set-goal-button {
       display: flex;
-      align-items: center;
       justify-content: center;
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      z-index: 99;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(5px);
-      background: rgba(90, 143, 123, 0.9);
+      margin: 1rem 1.5rem;
     }
 
-    .set-goal-btn:hover {
-      background: rgba(90, 143, 123, 1);
-      box-shadow: var(--shadow-hover);
-      transform: translateX(-50%) translateY(-2px);
-    }
-
-    .set-goal-btn i {
-      margin-right: 0.5rem;
+    .set-goal-button.hidden {
+      display: none;
     }
 
     /* Main Content */
     .main-content {
-      padding: 1.5rem;
-      padding-top: 1.5rem;
-      padding-bottom: 1.5rem;
+      padding: 0 1.5rem 1.5rem;
     }
 
     /* Stats Grid */
@@ -299,6 +312,7 @@
       border: 1px solid rgba(138, 180, 193, 0.3);
       backdrop-filter: blur(5px);
       transition: all 0.3s ease;
+      position: relative;
     }
 
     .stat-card:hover {
@@ -320,6 +334,15 @@
       margin: 0;
       color: var(--lily-pad);
       font-family: 'Playfair Display', serif;
+    }
+
+    .stat-card .info-icon {
+      position: absolute;
+      top: 0.5rem;
+      right: 0.5rem;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      cursor: pointer;
     }
 
     /* Chart Section */
@@ -622,7 +645,7 @@
       color: var(--lily-pad);
     }
 
-    /* Bottom Navigation - Lily Pad Style */
+    /* Bottom Navigation - Improved with better labels */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -1023,7 +1046,7 @@
     /* Mobile optimizations */
     @media (max-width: 400px) {
       .main-content {
-        padding: 1rem;
+        padding: 0 1rem 1rem;
       }
       
       .stat-card {
@@ -1069,20 +1092,92 @@
       .goal-controls input {
         width: 80px;
       }
+      
+      /* Improved bottom navigation */
+      .bottom-nav {
+        height: 70px;
+        padding: 0.5rem 0;
+      }
+      
+      .nav-btn {
+        min-width: 55px;
+      }
+      
+      .nav-btn i {
+        font-size: 1.25rem;
+        margin-bottom: 0.2rem;
+      }
+      
+      .nav-btn span {
+        font-size: 0.7rem;
+      }
+      
+      .nav-btn.active::after {
+        width: 20px;
+      }
+    }
+
+    /* Empty state styles */
+    .empty-state {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-secondary);
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--water-blue);
+    }
+
+    .empty-state p {
+      margin-bottom: 1.5rem;
+    }
+
+    /* Help indicators */
+    .help-indicator {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      width: 18px;
+      height: 18px;
+      background: var(--poppy-red);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: bold;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+      100% { transform: scale(1); }
     }
   </style>
 </head>
 <body>
   <div class="watercolor-bg"></div>
   <div class="app-container">
-    <!-- Pinned Goal Section (hidden by default) -->
-    <section class="pinned-goal" id="pinnedGoal">
+    <!-- App Header -->
+    <header class="app-header">
+      <h1 class="app-title"><i class="fas fa-weight"></i> Weight Tracker</h1>
+      <button class="theme-toggle" id="themeToggle">
+        <i class="fas fa-moon"></i>
+      </button>
+    </header>
+
+    <!-- Pinned Goal Section (now part of main content) -->
+    <section class="pinned-goal hidden" id="pinnedGoal">
       <div class="goal-header">
         <h2>Weight Goal</h2>
         <div class="goal-controls">
           <input type="number" id="targetWeight" placeholder="Target weight" step="0.1">
           <button class="btn btn-primary" id="setGoalBtn">Set</button>
-          <button class="btn btn-secondary" id="removeGoalBtn">No Goal</button>
+          <button class="btn btn-secondary" id="removeGoalBtn">Remove</button>
         </div>
       </div>
       <div class="goal-progress" id="goalProgress">
@@ -1097,25 +1192,33 @@
     </section>
 
     <!-- Set Goal Button (shown when no goal is set) -->
-
+    <div class="set-goal-button" id="setGoalButton">
+      <button class="btn btn-primary">
+        <i class="fas fa-bullseye"></i> Set Weight Goal
+      </button>
+    </div>
 
     <!-- Main Content -->
     <main class="main-content">
       <!-- Stats Overview -->
       <div class="stats-grid">
         <div class="stat-card">
+          <span class="info-icon" title="Your most recent weight">i</span>
           <h3>Current</h3>
           <p id="currentWeight">--</p>
         </div>
         <div class="stat-card">
+          <span class="info-icon" title="Change over the past 7 days">i</span>
           <h3>Weekly</h3>
           <p id="weeklyChange">--</p>
         </div>
         <div class="stat-card">
+          <span class="info-icon" title="Change over the past 30 days">i</span>
           <h3>Monthly</h3>
           <p id="monthlyChange">--</p>
         </div>
         <div class="stat-card">
+          <span class="info-icon" title="Consecutive days with entries">i</span>
           <h3>Streak</h3>
           <p id="streakCount">--</p>
         </div>
@@ -1146,7 +1249,9 @@
           <label for="weight">Weight (kg)</label>
           <input type="number" id="weight" step="0.1" placeholder="Enter weight" required>
         </div>
-        <button class="btn btn-primary" id="saveBtn">Save</button>
+        <button class="btn btn-primary" id="saveBtn">
+          <i class="fas fa-save"></i> Save
+        </button>
       </div>
 
       <!-- Entries Section -->
@@ -1154,7 +1259,7 @@
         <div class="entries-header">
           <h2>Your Entries</h2>
           <button class="btn btn-export" id="exportBtn">
-            <i class="fas fa-file-excel"></i> Export
+            <i class="fas fa-file-export"></i> Export
           </button>
         </div>
         <div class="search-box">
@@ -1191,19 +1296,23 @@
       </div>
     </main>
 
-    <!-- Bottom Navigation -->
+    <!-- Bottom Navigation - Improved with better labels -->
     <nav class="bottom-nav">
       <button class="nav-btn active" id="navHome">
         <i class="fas fa-home"></i>
-        <span>Home</span>
+        <span>Dashboard</span>
       </button>
-      <button class="nav-btn" id="navChart">
-        <i class="fas fa-chart-line"></i>
-        <span>Progress</span>
+      <button class="nav-btn" id="navGoal">
+        <i class="fas fa-bullseye"></i>
+        <span>Goals</span>
       </button>
       <button class="nav-btn" id="navAdd">
-        <i class="fas fa-plus"></i>
-        <span>Add</span>
+        <i class="fas fa-plus-circle"></i>
+        <span>Add Entry</span>
+      </button>
+      <button class="nav-btn" id="navData">
+        <i class="fas fa-history"></i>
+        <span>History</span>
       </button>
     </nav>
   </div>
@@ -1331,14 +1440,16 @@
       onboardingSteps: document.querySelectorAll('.onboarding-step'),
       onboardingDots: document.querySelectorAll('.dot'),
       navHome: document.getElementById('navHome'),
-      navChart: document.getElementById('navChart'),
+      navGoal: document.getElementById('navGoal'),
       navAdd: document.getElementById('navAdd'),
+      navData: document.getElementById('navData'),
       goalTooltip: document.getElementById('goalTooltip'),
       addTooltip: document.getElementById('addTooltip'),
       installBtn: document.getElementById('installBtn'),
       installClose: document.getElementById('installClose'),
       pinnedGoal: document.getElementById('pinnedGoal'),
-      setGoalButton: document.getElementById('setGoalButton')
+      setGoalButton: document.getElementById('setGoalButton'),
+      themeToggle: document.getElementById('themeToggle')
     };
 
     // Chart setup
@@ -1377,11 +1488,11 @@
     // Update goal section visibility based on whether goal is set
     function updateGoalSectionVisibility() {
       if (goalData.target) {
-        elements.pinnedGoal.classList.add('visible');
-        elements.setGoalButton.style.display = 'none';
+        elements.pinnedGoal.classList.remove('hidden');
+        elements.setGoalButton.classList.add('hidden');
       } else {
-        elements.pinnedGoal.classList.remove('visible');
-        elements.setGoalButton.style.display = 'flex';
+        elements.pinnedGoal.classList.add('hidden');
+        elements.setGoalButton.classList.remove('hidden');
       }
     }
 
@@ -1394,7 +1505,7 @@
         
         // Show tooltips after onboarding
         setTimeout(() => {
-          showTooltip(elements.goalTooltip, elements.setGoalBtn, 'Click to set your weight goal');
+          showTooltip(elements.goalTooltip, elements.setGoalButton, 'Click to set your weight goal');
           setTimeout(() => {
             showTooltip(elements.addTooltip, elements.navAdd, 'Tap here to add new entries');
           }, 2000);
@@ -1605,6 +1716,20 @@
       }
 
       if (sortedDates.length === 0) {
+        // Show empty state for chart
+        const chartContainer = document.querySelector('.chart-container');
+        chartContainer.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-chart-line"></i>
+            <p>No data to display yet</p>
+            <button class="btn btn-primary" id="addFirstEntry">Add Your First Entry</button>
+          </div>
+        `;
+        
+        document.getElementById('addFirstEntry').addEventListener('click', () => {
+          elements.navAdd.click();
+        });
+        
         return;
       }
 
@@ -1694,8 +1819,21 @@
 
       if (filteredDates.length === 0) {
         const row = document.createElement('tr');
-        row.innerHTML = `<td colspan="3" style="text-align: center;">No entries found</td>`;
+        row.innerHTML = `
+          <td colspan="3">
+            <div class="empty-state">
+              <i class="fas fa-inbox"></i>
+              <p>No entries found</p>
+              <button class="btn btn-primary" id="addFirstEntryBtn">Add Your First Entry</button>
+            </div>
+          </td>
+        `;
         elements.entriesTable.appendChild(row);
+        
+        document.getElementById('addFirstEntryBtn').addEventListener('click', () => {
+          elements.navAdd.click();
+        });
+        
         return;
       }
 
@@ -1897,12 +2035,29 @@
       // Scroll to section
       if (section === 'Home') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (section === 'Chart') {
-        document.querySelector('.chart-section').scrollIntoView({ behavior: 'smooth' });
+      } else if (section === 'Goal') {
+        document.querySelector('.pinned-goal').scrollIntoView({ behavior: 'smooth' });
       } else if (section === 'Add') {
         document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth' });
         elements.weightInput.focus();
+      } else if (section === 'Data') {
+        document.querySelector('.entries-section').scrollIntoView({ behavior: 'smooth' });
       }
+    }
+
+    // Toggle theme
+    function toggleTheme() {
+      const currentTheme = document.documentElement.getAttribute('data-theme');
+      if (currentTheme === 'dark') {
+        document.documentElement.removeAttribute('data-theme');
+        elements.themeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+        localStorage.setItem('theme', 'dark');
+      }
+      renderChart();
     }
 
     // PWA Installation
@@ -1957,7 +2112,7 @@
       elements.setGoalBtn.addEventListener('click', setWeightGoal);
       elements.removeGoalBtn.addEventListener('click', removeWeightGoal);
       elements.setGoalButton.addEventListener('click', () => {
-        document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth' });
+        document.querySelector('.pinned-goal').scrollIntoView({ behavior: 'smooth' });
         elements.targetWeightInput.focus();
       });
       elements.exportBtn.addEventListener('click', exportData);
@@ -1970,11 +2125,13 @@
       elements.onboardingNext.addEventListener('click', () => showOnboardingStep(currentOnboardingStep + 1));
       elements.onboardingPrev.addEventListener('click', () => showOnboardingStep(currentOnboardingStep - 1));
       elements.onboardingClose.addEventListener('click', () => elements.onboardingModal.style.display = 'none');
+      elements.themeToggle.addEventListener('click', toggleTheme);
 
       // Navigation event listeners
       elements.navHome.addEventListener('click', () => navigateTo('Home'));
-      elements.navChart.addEventListener('click', () => navigateTo('Chart'));
+      elements.navGoal.addEventListener('click', () => navigateTo('Goal'));
       elements.navAdd.addEventListener('click', () => navigateTo('Add'));
+      elements.navData.addEventListener('click', () => navigateTo('Data'));
 
       // Close modals when clicking outside
       window.addEventListener('click', (e) => {
@@ -1988,6 +2145,13 @@
 
       // Setup PWA installation
       setupPWAInstall();
+
+      // Check saved theme preference
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        elements.themeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+      }
 
       // Initialize app state
       checkFirstVisit();

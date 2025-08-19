@@ -235,39 +235,7 @@
       100% { transform: translateX(100%); }
     }
 
-    /* Set Goal Button (shown when no goal is set) */
-    .set-goal-btn {
-      position: fixed;
-      bottom: calc(var(--bottom-nav-height) + 20px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--lily-pad);
-      color: white;
-      border: none;
-      border-radius: var(--border-radius-lg);
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--shadow);
-      cursor: pointer;
-      z-index: 99;
-      transition: all 0.3s ease;
-      backdrop-filter: blur(5px);
-      background: rgba(90, 143, 123, 0.9);
-    }
-
-    .set-goal-btn:hover {
-      background: rgba(90, 143, 123, 1);
-      box-shadow: var(--shadow-hover);
-      transform: translateX(-50%) translateY(-2px);
-    }
-
-    .set-goal-btn i {
-      margin-right: 0.5rem;
-    }
+   
 
     /* Main Content */
     .main-content {
@@ -1096,11 +1064,7 @@
       </div>
     </section>
 
-    <!-- Set Goal Button (shown when no goal is set) -->
-    <button class="set-goal-btn" id="setGoalButton" style="display: none;">
-      <i class="fas fa-bullseye"></i> Set Goal
-    </button>
-
+   
     <!-- Main Content -->
     <main class="main-content">
       <!-- Stats Overview -->

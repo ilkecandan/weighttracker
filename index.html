@@ -76,6 +76,11 @@
       padding-bottom: var(--bottom-nav-height);
       background-attachment: fixed;
       background-size: cover;
+      /* Prevent elastic scrolling on iOS */
+      overscroll-behavior: none;
+      /* Improve text rendering */
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
     }
 
     h1, h2, h3 {
@@ -273,35 +278,7 @@
       100% { transform: translateX(100%); }
     }
 
-    /* Set Goal Button - Visible when no goal is set */
-    .set-goal-button {
-      display: flex;
-      justify-content: center;
-      margin: 1rem 1.5rem;
-    }
-
-    .set-goal-button.hidden {
-      display: none;
-    }
-
-    /* Main Content */
-    .main-content {
-      padding: 0 1.5rem 1.5rem;
-    }
-
-    /* Stats Grid */
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-
-    @media (min-width: 400px) {
-      .stats-grid {
-        grid-template-columns: repeat(4, 1fr);
-      }
-    }
+   
 
     .stat-card {
       background: var(--bg-secondary);
@@ -1157,6 +1134,87 @@
       50% { transform: scale(1.1); }
       100% { transform: scale(1); }
     }
+
+    /* New Floating Action Button */
+    .fab {
+      position: fixed;
+      bottom: calc(var(--bottom-nav-height) + 20px);
+      right: 20px;
+      width: 60px;
+      height: 60px;
+      background: var(--lily-pad);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: var(--shadow-hover);
+      cursor: pointer;
+      z-index: 99;
+      transition: all 0.3s ease;
+    }
+
+    .fab:hover {
+      transform: scale(1.1);
+      box-shadow: 0 6px 20px rgba(90, 143, 123, 0.4);
+    }
+
+    /* Swipe to delete */
+    .swipe-item {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .swipe-content {
+      transition: transform 0.3s ease;
+    }
+
+    .swipe-actions {
+      position: absolute;
+      top: 0;
+      right: -80px;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      transition: right 0.3s ease;
+    }
+
+    .swipe-item.swiped .swipe-actions {
+      right: 0;
+    }
+
+    .swipe-item.swiped .swipe-content {
+      transform: translateX(-80px);
+    }
+
+    /* Touch improvements */
+    button, .btn {
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+    }
+
+    /* Focus styles for accessibility */
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible {
+      outline: 2px solid var(--water-blue);
+      outline-offset: 2px;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid rgba(138, 180, 193, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--lily-pad);
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -1165,7 +1223,7 @@
     <!-- App Header -->
     <header class="app-header">
       <h1 class="app-title"><i class="fas fa-weight"></i> Weight Tracker</h1>
-      <button class="theme-toggle" id="themeToggle">
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode">
         <i class="fas fa-moon"></i>
       </button>
     </header>
@@ -1175,7 +1233,7 @@
       <div class="goal-header">
         <h2>Weight Goal</h2>
         <div class="goal-controls">
-          <input type="number" id="targetWeight" placeholder="Target weight" step="0.1">
+          <input type="number" id="targetWeight" placeholder="Target weight" step="0.1" aria-label="Target weight">
           <button class="btn btn-primary" id="setGoalBtn">Set</button>
           <button class="btn btn-secondary" id="removeGoalBtn">Remove</button>
         </div>
@@ -1190,6 +1248,7 @@
         </div>
       </div>
     </section>
+
 
 
     <!-- Main Content -->
@@ -1224,7 +1283,7 @@
           <canvas id="weightChart"></canvas>
         </div>
         <div class="time-range">
-          <select id="timeRange">
+          <select id="timeRange" aria-label="Select time range">
             <option value="week">Last 7 Days</option>
             <option value="month">Last 30 Days</option>
             <option value="3months">Last 3 Months</option>
@@ -1237,11 +1296,11 @@
       <div class="input-section">
         <div class="form-group">
           <label for="date">Date</label>
-          <input type="date" id="date" required>
+          <input type="date" id="date" required aria-label="Date">
         </div>
         <div class="form-group">
           <label for="weight">Weight (kg)</label>
-          <input type="number" id="weight" step="0.1" placeholder="Enter weight" required>
+          <input type="number" id="weight" step="0.1" placeholder="Enter weight" required aria-label="Weight in kilograms">
         </div>
         <button class="btn btn-primary" id="saveBtn">
           <i class="fas fa-save"></i> Save
@@ -1257,7 +1316,7 @@
           </button>
         </div>
         <div class="search-box">
-          <input type="text" id="searchEntry" placeholder="Search entries...">
+          <input type="text" id="searchEntry" placeholder="Search entries..." aria-label="Search entries">
         </div>
         <div class="entries-table-container">
           <table id="entriesTable">
@@ -1290,18 +1349,23 @@
       </div>
     </main>
 
+    <!-- Floating Action Button -->
+    <button class="fab" id="fabBtn" aria-label="Add new entry">
+      <i class="fas fa-plus"></i>
+    </button>
+
     <!-- Bottom Navigation - Improved with better labels -->
-    <nav class="bottom-nav">
-      <button class="nav-btn active" id="navHome">
+    <nav class="bottom-nav" aria-label="Main navigation">
+      <button class="nav-btn active" id="navHome" aria-label="Dashboard">
         <i class="fas fa-home"></i>
         <span>Dashboard</span>
       </button>
   
-      <button class="nav-btn" id="navAdd">
+      <button class="nav-btn" id="navAdd" aria-label="Add Entry">
         <i class="fas fa-plus-circle"></i>
         <span>Add Entry</span>
       </button>
-      <button class="nav-btn" id="navData">
+      <button class="nav-btn" id="navData" aria-label="History">
         <i class="fas fa-history"></i>
         <span>History</span>
       </button>
@@ -1309,20 +1373,20 @@
   </div>
 
   <!-- Edit Modal -->
-  <div class="modal" id="editModal">
+  <div class="modal" id="editModal" role="dialog" aria-labelledby="editModalTitle" aria-modal="true">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Edit Entry</h3>
-        <button class="close-modal" id="closeModal">&times;</button>
+        <h3 id="editModalTitle">Edit Entry</h3>
+        <button class="close-modal" id="closeModal" aria-label="Close modal">&times;</button>
       </div>
       <div class="modal-body">
         <div class="form-group">
-          <label>Date</label>
-          <input type="date" id="editDate" required>
+          <label for="editDate">Date</label>
+          <input type="date" id="editDate" required aria-label="Edit date">
         </div>
         <div class="form-group">
-          <label>Weight (kg)</label>
-          <input type="number" id="editWeight" step="0.1" required>
+          <label for="editWeight">Weight (kg)</label>
+          <input type="number" id="editWeight" step="0.1" required aria-label="Edit weight">
         </div>
       </div>
       <div class="modal-actions">
@@ -1334,10 +1398,10 @@
   </div>
 
   <!-- Onboarding Modal -->
-  <div class="modal onboarding-modal" id="onboardingModal">
+  <div class="modal onboarding-modal" id="onboardingModal" role="dialog" aria-labelledby="onboardingTitle" aria-modal="true">
     <div class="modal-content">
       <div class="onboarding-step" data-step="1">
-        <h3>Welcome to Weight Tracker!</h3>
+        <h3 id="onboardingTitle">Welcome to Weight Tracker!</h3>
         <p>Track your weight journey with our simple and intuitive app.</p>
         <div class="onboarding-image">
           <i class="fas fa-weight"></i>
@@ -1365,30 +1429,30 @@
         </div>
       </div>
       <div class="onboarding-nav">
-        <button class="btn btn-secondary" id="onboardingPrev"><i class="fas fa-chevron-left"></i></button>
+        <button class="btn btn-secondary" id="onboardingPrev" aria-label="Previous"><i class="fas fa-chevron-left"></i></button>
         <div class="onboarding-dots">
-          <span class="dot active" data-step="1"></span>
-          <span class="dot" data-step="2"></span>
-          <span class="dot" data-step="3"></span>
-          <span class="dot" data-step="4"></span>
+          <span class="dot active" data-step="1" aria-label="Step 1"></span>
+          <span class="dot" data-step="2" aria-label="Step 2"></span>
+          <span class="dot" data-step="3" aria-label="Step 3"></span>
+          <span class="dot" data-step="4" aria-label="Step 4"></span>
         </div>
-        <button class="btn btn-primary" id="onboardingNext"><i class="fas fa-chevron-right"></i></button>
+        <button class="btn btn-primary" id="onboardingNext" aria-label="Next"><i class="fas fa-chevron-right"></i></button>
       </div>
       <button class="btn btn-primary onboarding-close" id="onboardingClose">Get Started</button>
     </div>
   </div>
 
   <!-- Toast Notification -->
-  <div class="toast" id="toast"></div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <!-- Tooltips -->
-  <div class="tooltip" id="goalTooltip">Set your weight goal to track progress</div>
-  <div class="tooltip" id="addTooltip">Tap here to add a new weight entry</div>
+  <div class="tooltip" id="goalTooltip" role="tooltip">Set your weight goal to track progress</div>
+  <div class="tooltip" id="addTooltip" role="tooltip">Tap here to add a new weight entry</div>
 
   <!-- Install Button -->
-  <button class="install-btn" id="installBtn" style="display: none;">
+  <button class="install-btn" id="installBtn" style="display: none;" aria-label="Install app">
     <i class="fas fa-download"></i>
-    <button class="install-close" id="installClose" style="display: none;">×</button>
+    <button class="install-close" id="installClose" style="display: none;" aria-label="Dismiss install prompt">×</button>
   </button>
 
   <!-- Brushstroke Refresh Animation -->
@@ -1415,7 +1479,7 @@
       entriesTable: document.getElementById('entriesTable').querySelector('tbody'),
       searchEntry: document.getElementById('searchEntry'),
       editModal: document.getElementById('editModal'),
-      closeModal: document.querySelector('.close-modal'),
+      closeModal: document.getElementById('closeModal'),
       editDate: document.getElementById('editDate'),
       editWeight: document.getElementById('editWeight'),
       saveEditBtn: document.getElementById('saveEditBtn'),
@@ -1431,7 +1495,6 @@
       onboardingSteps: document.querySelectorAll('.onboarding-step'),
       onboardingDots: document.querySelectorAll('.dot'),
       navHome: document.getElementById('navHome'),
-      navGoal: document.getElementById('navGoal'),
       navAdd: document.getElementById('navAdd'),
       navData: document.getElementById('navData'),
       goalTooltip: document.getElementById('goalTooltip'),
@@ -1440,7 +1503,9 @@
       installClose: document.getElementById('installClose'),
       pinnedGoal: document.getElementById('pinnedGoal'),
       setGoalButton: document.getElementById('setGoalButton'),
-      themeToggle: document.getElementById('themeToggle')
+      showGoalFormBtn: document.getElementById('showGoalFormBtn'),
+      themeToggle: document.getElementById('themeToggle'),
+      fabBtn: document.getElementById('fabBtn')
     };
 
     // Chart setup
@@ -1519,6 +1584,7 @@
     // Onboarding flow
     function showOnboarding() {
       elements.onboardingModal.style.display = 'flex';
+      document.body.style.overflow = 'hidden'; // Prevent scrolling
       showOnboardingStep(0);
     }
 
@@ -2026,8 +2092,6 @@
       // Scroll to section
       if (section === 'Home') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-      } else if (section === 'Goal') {
-        document.querySelector('.pinned-goal').scrollIntoView({ behavior: 'smooth' });
       } else if (section === 'Add') {
         document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth' });
         elements.weightInput.focus();
@@ -2102,7 +2166,7 @@
       elements.saveBtn.addEventListener('click', saveWeight);
       elements.setGoalBtn.addEventListener('click', setWeightGoal);
       elements.removeGoalBtn.addEventListener('click', removeWeightGoal);
-      elements.setGoalButton.addEventListener('click', () => {
+      elements.showGoalFormBtn.addEventListener('click', () => {
         document.querySelector('.pinned-goal').scrollIntoView({ behavior: 'smooth' });
         elements.targetWeightInput.focus();
       });
@@ -2115,12 +2179,17 @@
       elements.deleteEntryBtn.addEventListener('click', deleteEntry);
       elements.onboardingNext.addEventListener('click', () => showOnboardingStep(currentOnboardingStep + 1));
       elements.onboardingPrev.addEventListener('click', () => showOnboardingStep(currentOnboardingStep - 1));
-      elements.onboardingClose.addEventListener('click', () => elements.onboardingModal.style.display = 'none');
+      elements.onboardingClose.addEventListener('click', () => {
+        elements.onboardingModal.style.display = 'none';
+        document.body.style.overflow = 'auto'; // Re-enable scrolling
+      });
       elements.themeToggle.addEventListener('click', toggleTheme);
+      elements.fabBtn.addEventListener('click', () => {
+        navigateTo('Add');
+      });
 
       // Navigation event listeners
       elements.navHome.addEventListener('click', () => navigateTo('Home'));
-      elements.navGoal.addEventListener('click', () => navigateTo('Goal'));
       elements.navAdd.addEventListener('click', () => navigateTo('Add'));
       elements.navData.addEventListener('click', () => navigateTo('Data'));
 
@@ -2131,6 +2200,7 @@
         }
         if (e.target === elements.onboardingModal) {
           elements.onboardingModal.style.display = 'none';
+          document.body.style.overflow = 'auto'; // Re-enable scrolling
         }
       });
 
@@ -2158,6 +2228,17 @@
       
       // Set today's date by default
       elements.dateInput.valueAsDate = new Date();
+
+      // Register service worker for PWA functionality
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then((registration) => {
+            console.log('SW registered: ', registration);
+          }).catch((registrationError) => {
+            console.log('SW registration failed: ', registrationError);
+          });
+        });
+      }
     }
 
     // Initialize the app when DOM is loaded

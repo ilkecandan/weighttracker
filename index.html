@@ -278,7 +278,35 @@
       100% { transform: translateX(100%); }
     }
 
-   
+    /* Set Goal Button - Visible when no goal is set */
+    .set-goal-button {
+      display: flex;
+      justify-content: center;
+      margin: 1rem 1.5rem;
+    }
+
+    .set-goal-button.hidden {
+      display: none;
+    }
+
+    /* Main Content */
+    .main-content {
+      padding: 0 1.5rem 1.5rem;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    @media (min-width: 400px) {
+      .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
 
     .stat-card {
       background: var(--bg-secondary);

@@ -908,6 +908,26 @@
       transform: translateY(-5px);
     }
 
+    /* Install Button Close */
+    .install-close {
+      position: absolute;
+      top: -5px;
+      right: -5px;
+      background: var(--poppy-red);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 20px;
+      height: 20px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 100;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    }
+
     /* Brushstroke Refresh Animation */
     .refresh-ani {
       position: fixed;
@@ -928,6 +948,43 @@
       0% { transform: translateX(-100%); }
       40%, 60% { transform: translateX(0); }
       100% { transform: translateX(100%); }
+    }
+
+    /* Footer Section */
+    .footer {
+      padding: 1.5rem;
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      background: var(--bg-secondary);
+      border-top: 1px solid rgba(138, 180, 193, 0.3);
+      backdrop-filter: blur(5px);
+    }
+
+    .footer p {
+      margin-bottom: 1rem;
+    }
+
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+
+    .footer-link {
+      color: var(--lily-pad);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .footer-link:hover {
+      color: var(--water-blue);
+      transform: translateY(-2px);
     }
 
     /* Responsive Design */
@@ -990,6 +1047,27 @@
       
       .modal-content {
         padding: 1.5rem;
+      }
+
+      .footer-links {
+        flex-direction: column;
+        gap: 0.75rem;
+      }
+    }
+
+    /* Improved mobile usability */
+    @media (max-width: 768px) {
+      input, select, textarea {
+        font-size: 16px !important; /* Prevents zoom on iOS */
+      }
+
+      .goal-controls {
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+
+      .goal-controls input {
+        width: 80px;
       }
     }
   </style>
@@ -1097,6 +1175,22 @@
           </table>
         </div>
       </div>
+
+      <!-- Footer Section -->
+      <div class="footer">
+        <p>About This Project: Created by Tempest Labs, to blend tracking weight easy.</p>
+        <div class="footer-links">
+          <a href="https://buymeacoffee.com/ilkecandan" target="_blank" class="footer-link">
+            <i class="fas fa-coffee"></i> Support this project
+          </a>
+          <a href="https://ilkecandanbengi.com/" target="_blank" class="footer-link">
+            <i class="fas fa-user"></i> Meet me
+          </a>
+          <a href="https://www.linkedin.com/in/ilkecandan/" target="_blank" class="footer-link">
+            <i class="fab fa-linkedin"></i> Add me on LinkedIn
+          </a>
+        </div>
+      </div>
     </main>
 
     <!-- Bottom Navigation -->
@@ -1112,10 +1206,6 @@
       <button class="nav-btn" id="navAdd">
         <i class="fas fa-plus"></i>
         <span>Add</span>
-      </button>
-      <button class="nav-btn" id="navSettings">
-        <i class="fas fa-cog"></i>
-        <span>Settings</span>
       </button>
     </nav>
   </div>
@@ -1200,6 +1290,7 @@
   <!-- Install Button -->
   <button class="install-btn" id="installBtn" style="display: none;">
     <i class="fas fa-download"></i>
+    <button class="install-close" id="installClose" style="display: none;">×</button>
   </button>
 
   <!-- Brushstroke Refresh Animation -->
@@ -1244,10 +1335,10 @@
       navHome: document.getElementById('navHome'),
       navChart: document.getElementById('navChart'),
       navAdd: document.getElementById('navAdd'),
-      navSettings: document.getElementById('navSettings'),
       goalTooltip: document.getElementById('goalTooltip'),
       addTooltip: document.getElementById('addTooltip'),
       installBtn: document.getElementById('installBtn'),
+      installClose: document.getElementById('installClose'),
       pinnedGoal: document.getElementById('pinnedGoal'),
       setGoalButton: document.getElementById('setGoalButton')
     };
@@ -1281,6 +1372,9 @@
       console.error("Error parsing goal from localStorage", e);
       goalData = { target: null };
     }
+
+    // Check if user has dismissed install prompt
+    const installDismissed = localStorage.getItem('installDismissed') === 'true';
 
     // Update goal section visibility based on whether goal is set
     function updateGoalSectionVisibility() {
@@ -1810,8 +1904,6 @@
       } else if (section === 'Add') {
         document.querySelector('.input-section').scrollIntoView({ behavior: 'smooth' });
         elements.weightInput.focus();
-      } else if (section === 'Settings') {
-        showToast("⚙️ Settings coming soon");
       }
     }
 
@@ -1822,8 +1914,12 @@
         e.preventDefault();
         // Stash the event so it can be triggered later
         deferredPrompt = e;
-        // Show the install button
-        elements.installBtn.style.display = 'flex';
+        
+        // Only show install button if user hasn't dismissed it
+        if (!installDismissed) {
+          elements.installBtn.style.display = 'flex';
+          elements.installClose.style.display = 'block';
+        }
       });
 
       elements.installBtn.addEventListener('click', async () => {
@@ -1834,13 +1930,22 @@
         const { outcome } = await deferredPrompt.userChoice;
         // Hide the install button
         elements.installBtn.style.display = 'none';
+        elements.installClose.style.display = 'none';
         // Clear the deferredPrompt variable
         deferredPrompt = null;
+      });
+
+      elements.installClose.addEventListener('click', (e) => {
+        e.stopPropagation();
+        elements.installBtn.style.display = 'none';
+        elements.installClose.style.display = 'none';
+        localStorage.setItem('installDismissed', 'true');
       });
 
       window.addEventListener('appinstalled', () => {
         // Hide the install button
         elements.installBtn.style.display = 'none';
+        elements.installClose.style.display = 'none';
         // Clear the deferredPrompt variable
         deferredPrompt = null;
         showToast("🎉 App installed successfully!");
@@ -1872,7 +1977,6 @@
       elements.navHome.addEventListener('click', () => navigateTo('Home'));
       elements.navChart.addEventListener('click', () => navigateTo('Chart'));
       elements.navAdd.addEventListener('click', () => navigateTo('Add'));
-      elements.navSettings.addEventListener('click', () => navigateTo('Settings'));
 
       // Close modals when clicking outside
       window.addEventListener('click', (e) => {

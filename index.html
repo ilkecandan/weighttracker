@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <meta name="description" content="Track your weight and progress towards your goals"/>
+  <meta name="description" content="Track your weight and progress"/>
   <title>Weight Tracker</title>
   <link rel="manifest" href="manifest.json"/>
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
@@ -160,133 +160,6 @@
     .theme-toggle:hover {
       color: var(--lily-pad);
       background: rgba(138, 180, 193, 0.2);
-    }
-
-    /* Pinned Goal Section - Only shows when goal is set */
-    .pinned-goal {
-      background: var(--bg-secondary);
-      padding: 1.25rem 1.5rem;
-      margin: 1rem 1.5rem;
-      border-radius: var(--border-radius);
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(138, 180, 193, 0.3);
-      backdrop-filter: blur(5px);
-      transform: translateY(0);
-      opacity: 1;
-      transition: all 0.5s ease;
-      height: auto;
-    }
-
-    .pinned-goal.hidden {
-      display: none;
-    }
-
-    .goal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 0.75rem;
-      gap: 0.75rem;
-    }
-
-    .goal-header h2 {
-      margin: 0;
-      font-size: 1.25rem;
-      white-space: nowrap;
-      color: var(--lily-pad);
-      font-weight: 600;
-    }
-
-    .goal-controls {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-    }
-
-    .goal-controls input {
-      width: 100px;
-      padding: 0.75rem;
-      border: 1px solid rgba(138, 180, 193, 0.5);
-      border-radius: var(--border-radius-sm);
-      background: var(--bg-tertiary);
-      color: var(--text-primary);
-      font-size: 1rem;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
-
-    .goal-controls input:focus {
-      outline: none;
-      border-color: var(--water-blue);
-      box-shadow: 0 0 0 2px rgba(138, 180, 193, 0.3);
-    }
-
-    .goal-progress {
-      margin-top: 0.75rem;
-    }
-
-    .progress-text {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.75rem;
-      font-size: 1rem;
-    }
-
-    .progress-text span:first-child {
-      font-weight: 600;
-      color: var(--lily-pad);
-    }
-
-    .progress-text span:last-child {
-      color: var(--text-secondary);
-    }
-
-    .progress-bar {
-      height: 12px;
-      background: var(--bg-tertiary);
-      border-radius: 6px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, var(--water-blue), var(--lily-pad));
-      width: 0%;
-      transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
-      border-radius: 6px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .progress-fill::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(90deg, 
-        rgba(255,255,255,0.3) 0%, 
-        rgba(255,255,255,0) 50%, 
-        rgba(255,255,255,0.3) 100%);
-      animation: shimmer 2s infinite;
-    }
-
-    @keyframes shimmer {
-      0% { transform: translateX(-100%); }
-      100% { transform: translateX(100%); }
-    }
-
-    /* Set Goal Button - Visible when no goal is set */
-    .set-goal-button {
-      display: flex;
-      justify-content: center;
-      margin: 1rem 1.5rem;
-    }
-
-    .set-goal-button.hidden {
-      display: none;
     }
 
     /* Main Content */
@@ -1093,15 +966,6 @@
       input, select, textarea {
         font-size: 16px !important; /* Prevents zoom on iOS */
       }
-
-      .goal-controls {
-        flex-wrap: wrap;
-        justify-content: flex-end;
-      }
-
-      .goal-controls input {
-        width: 80px;
-      }
       
       /* Improved bottom navigation */
       .bottom-nav {
@@ -1248,6 +1112,65 @@
     @keyframes spin {
       to { transform: rotate(360deg); }
     }
+
+    /* Mobile welcome banner */
+    .welcome-banner {
+      background: var(--bg-secondary);
+      padding: 1.25rem;
+      margin: 1rem 1.5rem;
+      border-radius: var(--border-radius);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(138, 180, 193, 0.3);
+      backdrop-filter: blur(5px);
+      text-align: center;
+    }
+
+    .welcome-banner h2 {
+      color: var(--lily-pad);
+      margin-bottom: 0.5rem;
+    }
+
+    .welcome-banner p {
+      color: var(--text-secondary);
+      margin-bottom: 1rem;
+    }
+
+    /* Quick actions */
+    .quick-actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .quick-action-btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 1rem;
+      background: var(--bg-secondary);
+      border: 1px solid rgba(138, 180, 193, 0.3);
+      border-radius: var(--border-radius);
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .quick-action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-hover);
+    }
+
+    .quick-action-btn i {
+      font-size: 1.5rem;
+      color: var(--lily-pad);
+      margin-bottom: 0.5rem;
+    }
+
+    .quick-action-btn span {
+      display: block;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
   </style>
 </head>
 <body>
@@ -1261,33 +1184,33 @@
       </button>
     </header>
 
-    <!-- Pinned Goal Section (now part of main content) -->
-    <section class="pinned-goal hidden" id="pinnedGoal">
-      <div class="goal-header">
-        <h2>Weight Goal</h2>
-        <div class="goal-controls">
-          <input type="number" id="targetWeight" placeholder="Target weight" step="0.1" aria-label="Target weight">
-          <button class="btn btn-primary" id="setGoalBtn">Set</button>
-          <button class="btn btn-secondary" id="removeGoalBtn">Remove</button>
-        </div>
-      </div>
-      <div class="goal-progress" id="goalProgress">
-        <div class="progress-text">
-          <span id="currentWeightDisplay">--</span>
-          <span id="goalText">No goal set</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Set Goal Button - Visible when no goal is set -->
-    <section class="set-goal-button" id="setGoalButton">
+    <!-- Welcome Banner -->
+    <section class="welcome-banner" id="welcomeBanner">
+      <h2>Welcome to Weight Tracker!</h2>
+      <p>Track your weight easily and visualize your progress over time.</p>
+      <button class="btn btn-primary" id="getStartedBtn">
+        <i class="fas fa-rocket"></i> Get Started
+      </button>
     </section>
 
     <!-- Main Content -->
     <main class="main-content">
+      <!-- Quick Actions -->
+      <div class="quick-actions">
+        <div class="quick-action-btn" id="quickAdd">
+          <i class="fas fa-plus-circle"></i>
+          <span>Add Entry</span>
+        </div>
+        <div class="quick-action-btn" id="quickView">
+          <i class="fas fa-chart-line"></i>
+          <span>View Chart</span>
+        </div>
+        <div class="quick-action-btn" id="quickExport">
+          <i class="fas fa-file-export"></i>
+          <span>Export Data</span>
+        </div>
+      </div>
+
       <!-- Stats Overview -->
       <div class="stats-grid">
         <div class="stat-card">
@@ -1443,17 +1366,17 @@
         </div>
       </div>
       <div class="onboarding-step" data-step="2">
-        <h3>Set Your Goal</h3>
-        <p>Set a target weight to track your progress towards your goal.</p>
-        <div class="onboarding-image">
-          <i class="fas fa-bullseye"></i>
-        </div>
-      </div>
-      <div class="onboarding-step" data-step="3">
-        <h3>Track Daily</h3>
+        <h3>Easy Tracking</h3>
         <p>Add your daily weight to see trends and progress over time.</p>
         <div class="onboarding-image">
           <i class="fas fa-chart-line"></i>
+        </div>
+      </div>
+      <div class="onboarding-step" data-step="3">
+        <h3>View History</h3>
+        <p>See all your entries in one place and search through them easily.</p>
+        <div class="onboarding-image">
+          <i class="fas fa-history"></i>
         </div>
       </div>
       <div class="onboarding-step" data-step="4">
@@ -1481,7 +1404,6 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <!-- Tooltips -->
-  <div class="tooltip" id="goalTooltip" role="tooltip">Set your weight goal to track progress</div>
   <div class="tooltip" id="addTooltip" role="tooltip">Tap here to add a new weight entry</div>
 
   <!-- Install Button -->
@@ -1500,13 +1422,6 @@
       dateInput: document.getElementById('date'),
       weightInput: document.getElementById('weight'),
       saveBtn: document.getElementById('saveBtn'),
-      targetWeightInput: document.getElementById('targetWeight'),
-      setGoalBtn: document.getElementById('setGoalBtn'),
-      removeGoalBtn: document.getElementById('removeGoalBtn'),
-      goalProgress: document.getElementById('goalProgress'),
-      progressFill: document.getElementById('progressFill'),
-      currentWeightDisplay: document.getElementById('currentWeightDisplay'),
-      goalText: document.getElementById('goalText'),
       currentWeightEl: document.getElementById('currentWeight'),
       weeklyChangeEl: document.getElementById('weeklyChange'),
       monthlyChangeEl: document.getElementById('monthlyChange'),
@@ -1532,15 +1447,16 @@
       navHome: document.getElementById('navHome'),
       navAdd: document.getElementById('navAdd'),
       navData: document.getElementById('navData'),
-      goalTooltip: document.getElementById('goalTooltip'),
       addTooltip: document.getElementById('addTooltip'),
       installBtn: document.getElementById('installBtn'),
       installClose: document.getElementById('installClose'),
-      pinnedGoal: document.getElementById('pinnedGoal'),
-      setGoalButton: document.getElementById('setGoalButton'),
-      showGoalFormBtn: document.getElementById('showGoalFormBtn'),
       themeToggle: document.getElementById('themeToggle'),
-      fabBtn: document.getElementById('fabBtn')
+      fabBtn: document.getElementById('fabBtn'),
+      welcomeBanner: document.getElementById('welcomeBanner'),
+      getStartedBtn: document.getElementById('getStartedBtn'),
+      quickAdd: document.getElementById('quickAdd'),
+      quickView: document.getElementById('quickView'),
+      quickExport: document.getElementById('quickExport')
     };
 
     // Chart setup
@@ -1555,7 +1471,6 @@
 
     // Load data from localStorage safely
     let weightData = {};
-    let goalData = { target: null };
 
     try {
       const weights = localStorage.getItem('weights');
@@ -1565,27 +1480,11 @@
       weightData = {};
     }
 
-    try {
-      const goal = localStorage.getItem('weightGoal');
-      goalData = goal ? JSON.parse(goal) : { target: null };
-    } catch (e) {
-      console.error("Error parsing goal from localStorage", e);
-      goalData = { target: null };
-    }
-
     // Check if user has dismissed install prompt
     const installDismissed = localStorage.getItem('installDismissed') === 'true';
 
-    // Update goal section visibility based on whether goal is set
-    function updateGoalSectionVisibility() {
-      if (goalData.target) {
-        elements.pinnedGoal.classList.remove('hidden');
-        elements.setGoalButton.classList.add('hidden');
-      } else {
-        elements.pinnedGoal.classList.add('hidden');
-        elements.setGoalButton.classList.remove('hidden');
-      }
-    }
+    // Check if user has dismissed welcome banner
+    const welcomeDismissed = localStorage.getItem('welcomeDismissed') === 'true';
 
     // Show onboarding if first visit
     function checkFirstVisit() {
@@ -1596,10 +1495,7 @@
         
         // Show tooltips after onboarding
         setTimeout(() => {
-          showTooltip(elements.goalTooltip, elements.setGoalButton, 'Click to set your weight goal');
-          setTimeout(() => {
-            showTooltip(elements.addTooltip, elements.navAdd, 'Tap here to add new entries');
-          }, 2000);
+          showTooltip(elements.addTooltip, elements.navAdd, 'Tap here to add new entries');
         }, 500);
       }
     }
@@ -1702,76 +1598,13 @@
       renderChart();
       renderEntriesTable();
       updateStats();
-      updateGoalProgress();
       elements.weightInput.focus();
-    }
-
-    // Set weight goal
-    function setWeightGoal() {
-      const target = parseFloat(elements.targetWeightInput.value);
       
-      if (isNaN(target)) {
-        showToast("⚠️ Please enter valid target weight");
-        return;
+      // Hide welcome banner after first entry
+      if (elements.welcomeBanner.style.display !== 'none') {
+        elements.welcomeBanner.style.display = 'none';
+        localStorage.setItem('welcomeDismissed', 'true');
       }
-      
-      goalData.target = target;
-      try {
-        localStorage.setItem('weightGoal', JSON.stringify(goalData));
-      } catch (e) {
-        console.error("Error saving goal to localStorage", e);
-        showToast("⚠️ Error saving goal");
-        return;
-      }
-      showToast(`🎯 Goal set to ${target} kg`);
-      
-      updateGoalProgress();
-      updateGoalSectionVisibility();
-      renderChart();
-    }
-
-    // Remove weight goal
-    function removeWeightGoal() {
-      goalData.target = null;
-      try {
-        localStorage.setItem('weightGoal', JSON.stringify(goalData));
-      } catch (e) {
-        console.error("Error removing goal from localStorage", e);
-        showToast("⚠️ Error removing goal");
-        return;
-      }
-      showToast("🎯 Goal removed");
-      updateGoalProgress();
-      updateGoalSectionVisibility();
-      renderChart();
-    }
-
-    // Update goal progress display
-    function updateGoalProgress() {
-      if (!goalData.target) {
-        elements.goalText.textContent = "No goal set";
-        elements.progressFill.style.width = "0%";
-        elements.currentWeightDisplay.textContent = "--";
-        return;
-      }
-
-      const dates = Object.keys(weightData).sort();
-      if (dates.length === 0) {
-        elements.goalText.textContent = "No data yet";
-        elements.progressFill.style.width = "0%";
-        elements.currentWeightDisplay.textContent = "--";
-        return;
-      }
-
-      const currentWeight = weightData[dates[dates.length - 1]];
-      elements.currentWeightDisplay.textContent = `${currentWeight} kg`;
-      elements.goalText.textContent = `Goal: ${goalData.target} kg`;
-
-      // Calculate progress (assuming goal is to lose weight)
-      const initialWeight = weightData[dates[0]];
-      const progress = initialWeight ? ((currentWeight - goalData.target) / (initialWeight - goalData.target)) * 100 : 0;
-      const progressPercent = Math.min(100, Math.max(0, 100 - progress));
-      elements.progressFill.style.width = `${progressPercent}%`;
     }
 
     // Get filtered data based on time range
@@ -1829,22 +1662,6 @@
       const gridColor = isDark ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
       const textColor = isDark ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.8)';
 
-      const goalAnnotation = goalData.target ? {
-        type: 'line',
-        mode: 'horizontal',
-        scaleID: 'y',
-        value: goalData.target,
-        borderColor: 'var(--lily-pad)',
-        borderWidth: 2,
-        borderDash: [6, 6],
-        label: {
-          content: 'Goal: ' + goalData.target + 'kg',
-          enabled: true,
-          position: 'right',
-          backgroundColor: 'rgba(0,0,0,0.7)'
-        }
-      } : null;
-
       weightChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -1876,8 +1693,7 @@
                 label: context => `${context.parsed.y} kg`,
                 title: context => formatDate(context[0].label, false)
               }
-            },
-            annotation: goalAnnotation ? { annotations: { goal: goalAnnotation } } : {}
+            }
           },
           scales: {
             y: { 
@@ -1986,7 +1802,6 @@
       renderChart();
       renderEntriesTable();
       updateStats();
-      updateGoalProgress();
     }
 
     // Delete entry
@@ -2005,7 +1820,6 @@
         renderChart();
         renderEntriesTable();
         updateStats();
-        updateGoalProgress();
         elements.editModal.style.display = 'none';
       }
     }
@@ -2091,14 +1905,6 @@
       csvContent += `Total Entries,${dates.length}\n`;
       csvContent += `First Entry,${formatDate(dates[0], false, true)}\n`;
       csvContent += `Last Entry,${formatDate(dates[dates.length - 1], false, true)}\n`;
-      
-      if (goalData.target) {
-        csvContent += `Goal Weight,${goalData.target} kg\n`;
-        
-        const currentWeight = weightData[dates[dates.length - 1]];
-        const progress = currentWeight - goalData.target;
-        csvContent += `Progress,${progress > 0 ? '+' : ''}${progress.toFixed(1)} kg from goal\n`;
-      }
 
       // Create download link
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -2199,12 +2005,6 @@
     function initApp() {
       // Add event listeners
       elements.saveBtn.addEventListener('click', saveWeight);
-      elements.setGoalBtn.addEventListener('click', setWeightGoal);
-      elements.removeGoalBtn.addEventListener('click', removeWeightGoal);
-      elements.showGoalFormBtn.addEventListener('click', () => {
-        document.querySelector('.pinned-goal').scrollIntoView({ behavior: 'smooth' });
-        elements.targetWeightInput.focus();
-      });
       elements.exportBtn.addEventListener('click', exportData);
       elements.timeRange.addEventListener('change', renderChart);
       elements.searchEntry.addEventListener('input', (e) => renderEntriesTable(e.target.value));
@@ -2222,6 +2022,16 @@
       elements.fabBtn.addEventListener('click', () => {
         navigateTo('Add');
       });
+      elements.getStartedBtn.addEventListener('click', () => {
+        elements.welcomeBanner.style.display = 'none';
+        localStorage.setItem('welcomeDismissed', 'true');
+        navigateTo('Add');
+      });
+      elements.quickAdd.addEventListener('click', () => navigateTo('Add'));
+      elements.quickView.addEventListener('click', () => {
+        document.querySelector('.chart-section').scrollIntoView({ behavior: 'smooth' });
+      });
+      elements.quickExport.addEventListener('click', exportData);
 
       // Navigation event listeners
       elements.navHome.addEventListener('click', () => navigateTo('Home'));
@@ -2254,11 +2064,10 @@
       renderChart();
       renderEntriesTable();
       updateStats();
-      updateGoalProgress();
-      updateGoalSectionVisibility();
       
-      if (goalData.target) {
-        elements.targetWeightInput.value = goalData.target;
+      // Hide welcome banner if already dismissed
+      if (welcomeDismissed) {
+        elements.welcomeBanner.style.display = 'none';
       }
       
       // Set today's date by default

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Simple, privacy-first weight tracker app" />
+  <title>Weight Tracker - Intro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Roboto', sans-serif;
+      margin: 0;
+      background: #f5f9fa;
+      color: #2c3e3e;
+    }
+    header {
+      padding: 1rem 2rem;
+      background: #7aa082;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    main {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+    }
+    section {
+      background: white;
+      margin-bottom: 2rem;
+      padding: 1.5rem;
+      border-radius: 16px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    section h2 {
+      margin-top: 0;
+      font-family: 'Playfair Display', serif;
+      color: #5a8f7b;
+    }
+    .pwa-list li {
+      margin-bottom: 0.5rem;
+    }
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      background: #f0f5f5;
+      font-size: 0.9rem;
+    }
+    footer a {
+      color: #5a8f7b;
+      text-decoration: none;
+      margin: 0 0.5rem;
+    }
+    .try-link {
+      display: inline-block;
+      background: #7aa082;
+      color: white;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: bold;
+      margin-top: 1rem;
+    }
+    .try-link:hover {
+      background: #5a8f7b;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><i class="fas fa-weight"></i> Weight Tracker</h1>
+  </header>
+  
+  <main>
+    <section>
+      <h2>What is Weight Tracker?</h2>
+      <p><strong>Weight Tracker</strong> is a simple mobile app that helps you keep track of your weight. It works offline, stores everything on your device, and gives you a clear view of your progress. No clutter and no extra steps, just you and your numbers.</p>
+      <a href="index.html" class="try-link"><i class="fas fa-play"></i> Try the App</a>
+    </section>
+
+    <section>
+      <h2>Privacy First</h2>
+      <p>We do not collect any of your information. There are no accounts, no trackers, no notifications. All data is stored only on your device using local storage. Your progress belongs to you and only you.</p>
+    </section>
+
+    <section>
+      <h2>Install as an App</h2>
+      <p>You can install Weight Tracker as a Progressive Web App (PWA) to make it feel just like a regular app:</p>
+      <ul class="pwa-list">
+        <li><strong>Android (Chrome/Edge):</strong> Open the menu <i class="fas fa-ellipsis-v"></i> and choose “Add to Home Screen”</li>
+        <li><strong>iPhone/iPad (Safari):</strong> Tap the share button <i class="fas fa-share"></i> and select “Add to Home Screen”</li>
+        <li><strong>Desktop (Chrome/Edge):</strong> Click the install icon <i class="fas fa-download"></i> in the address bar</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>Support This Project</h2>
+      <p>Weight Tracker is free to use. If you want to support it, you can:</p>
+      <ul>
+        <li>Follow us on Instagram: <a href="https://instagram.com/tempestlabsofficial" target="_blank">@tempestlabsofficial</a></li>
+        <li>Connect on LinkedIn: <a href="https://www.linkedin.com/company/tempestlabsofficial/" target="_blank">Tempest Labs Official</a></li>
+        <li>Buy me a coffee: <a href="https://buymeacoffee.com/ilkecandan" target="_blank">Support here</a></li>
+        <li>Check out more apps: <a href="https://tempestlabs.space/" target="_blank">Tempest Labs</a></li>
+      </ul>
+    </section>
+  </main>
+
+  <footer>
+    <p>Created by Tempest Labs. Simple tools to make everyday life easier.</p>
+    <p><a href="https://tempestlabs.space/">Visit Tempest Labs</a></p>
+  </footer>
+</body>
+</html>
